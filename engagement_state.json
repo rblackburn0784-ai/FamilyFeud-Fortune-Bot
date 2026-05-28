@@ -1,0 +1,64 @@
+{
+  "daily_surveys": {
+    "1470094591192727806": {}
+  },
+  "suggestions": {
+    "1470094591192727806": []
+  },
+  "team_rivalries": {
+    "1470094591192727806": {
+      "red_wins": 1,
+      "blue_wins": 0,
+      "draws": 2,
+      "last_winner": "draw"
+    }
+  },
+  "player_rivalries": {
+    "1470094591192727806": {}
+  },
+  "last_reminders": {},
+  "recent_questions": {
+    "1470094591192727806": [
+      "history:name something associated with history:drink|keys|car|money|phone|food",
+      "crime:name something that causes trouble on a rainy day:witness|money|police|thief|detective",
+      "pets:name something associated with pets:drink|keys|car|money|phone|food"
+    ]
+  },
+  "question_analytics": {
+    "1470094591192727806": {
+      "history:name something associated with history:drink|keys|car|money|phone|food": {
+        "question": "Name something associated with history.",
+        "category": "history",
+        "difficulty": "hard",
+        "times_used": 1,
+        "correct_guesses": 1,
+        "wrong_guesses": 3,
+        "skips": 0,
+        "steals": 0,
+        "full_clears": 0
+      },
+      "crime:name something that causes trouble on a rainy day:witness|money|police|thief|detective": {
+        "question": "Name something that causes trouble on a rainy day.",
+        "category": "crime",
+        "difficulty": "normal",
+        "times_used": 1,
+        "correct_guesses": 0,
+        "wrong_guesses": 3,
+        "skips": 0,
+        "steals": 0,
+        "full_clears": 0
+      },
+      "pets:name something associated with pets:drink|keys|car|money|phone|food": {
+        "question": "Name something associated with pets.",
+        "category": "pets",
+        "difficulty": "hard",
+        "times_used": 1,
+        "correct_guesses": 0,
+        "wrong_guesses": 1,
+        "skips": 0,
+        "steals": 0,
+        "full_clears": 0
+      }
+    }
+  }
+}

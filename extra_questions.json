@@ -1,0 +1,442 @@
+[
+  {
+    "category": "modern_life",
+    "question": "Name something people check before they even get out of bed.",
+    "answers": [
+      {"text": "Phone", "points": 35, "aliases": ["mobile", "notifications"]},
+      {"text": "Time", "points": 25, "aliases": ["clock", "alarm"]},
+      {"text": "Messages", "points": 18, "aliases": ["texts", "chat"]},
+      {"text": "Weather", "points": 14, "aliases": ["forecast"]},
+      {"text": "Social media", "points": 8, "aliases": ["instagram", "tiktok"]}
+    ]
+  },
+  {
+    "category": "modern_life",
+    "question": "Name something that always needs updating at the worst possible time.",
+    "answers": [
+      {"text": "Computer", "points": 32, "aliases": ["pc", "laptop"]},
+      {"text": "Phone", "points": 26, "aliases": ["mobile"]},
+      {"text": "Game console", "points": 18, "aliases": ["playstation", "xbox"]},
+      {"text": "App", "points": 14, "aliases": ["software"]},
+      {"text": "Sat nav", "points": 10, "aliases": ["gps", "maps"]}
+    ]
+  },
+  {
+    "category": "social_media",
+    "question": "Name something people do before posting a selfie.",
+    "answers": [
+      {"text": "Retake it", "points": 34, "aliases": ["take another"]},
+      {"text": "Add a filter", "points": 28, "aliases": ["filter"]},
+      {"text": "Check the background", "points": 16, "aliases": ["background"]},
+      {"text": "Fix their hair", "points": 12, "aliases": ["hair"]},
+      {"text": "Ask a friend", "points": 10, "aliases": ["approval"]}
+    ]
+  },
+  {
+    "category": "social_media",
+    "question": "Name something that makes people leave a group chat.",
+    "answers": [
+      {"text": "Too many notifications", "points": 31, "aliases": ["notifications", "pings"]},
+      {"text": "Arguments", "points": 27, "aliases": ["fighting", "drama"]},
+      {"text": "Spam", "points": 19, "aliases": ["junk"]},
+      {"text": "Spoilers", "points": 13, "aliases": ["spoiler"]},
+      {"text": "Voice notes", "points": 10, "aliases": ["audio messages"]}
+    ]
+  },
+  {
+    "category": "shopping",
+    "question": "Name something people buy when they only went in for milk.",
+    "answers": [
+      {"text": "Chocolate", "points": 30, "aliases": ["sweets", "candy"]},
+      {"text": "Bread", "points": 24, "aliases": ["loaf"]},
+      {"text": "Crisps", "points": 19, "aliases": ["chips"]},
+      {"text": "Wine", "points": 15, "aliases": ["beer", "alcohol"]},
+      {"text": "Biscuits", "points": 12, "aliases": ["cookies"]}
+    ]
+  },
+  {
+    "category": "shopping",
+    "question": "Name something people forget to bring to the supermarket.",
+    "answers": [
+      {"text": "Shopping bags", "points": 38, "aliases": ["bags"]},
+      {"text": "List", "points": 27, "aliases": ["shopping list"]},
+      {"text": "Wallet", "points": 15, "aliases": ["purse", "money"]},
+      {"text": "Coupons", "points": 11, "aliases": ["vouchers"]},
+      {"text": "Loyalty card", "points": 9, "aliases": ["clubcard"]}
+    ]
+  },
+  {
+    "category": "transport",
+    "question": "Name something people do while waiting for a late bus.",
+    "answers": [
+      {"text": "Check the time", "points": 31, "aliases": ["look at clock"]},
+      {"text": "Look down the road", "points": 26, "aliases": ["look for it"]},
+      {"text": "Complain", "points": 19, "aliases": ["moan"]},
+      {"text": "Check an app", "points": 14, "aliases": ["bus app", "maps"]},
+      {"text": "Walk instead", "points": 10, "aliases": ["start walking"]}
+    ]
+  },
+  {
+    "category": "transport",
+    "question": "Name something you hate hearing on a train.",
+    "answers": [
+      {"text": "Delay announcement", "points": 36, "aliases": ["delayed"]},
+      {"text": "Loud phone call", "points": 25, "aliases": ["phone call"]},
+      {"text": "Crying baby", "points": 17, "aliases": ["baby crying"]},
+      {"text": "Noisy music", "points": 12, "aliases": ["music"]},
+      {"text": "Ticket inspection", "points": 10, "aliases": ["tickets please"]}
+    ]
+  },
+  {
+    "category": "dating",
+    "question": "Name something people lie about on a dating profile.",
+    "answers": [
+      {"text": "Age", "points": 29, "aliases": []},
+      {"text": "Height", "points": 27, "aliases": []},
+      {"text": "Photos", "points": 20, "aliases": ["looks", "appearance"]},
+      {"text": "Job", "points": 13, "aliases": ["career"]},
+      {"text": "Hobbies", "points": 11, "aliases": ["interests"]}
+    ]
+  },
+  {
+    "category": "dating",
+    "question": "Name something that makes a first date awkward.",
+    "answers": [
+      {"text": "Silence", "points": 30, "aliases": ["awkward silence"]},
+      {"text": "Talking about an ex", "points": 25, "aliases": ["ex"]},
+      {"text": "Bad manners", "points": 18, "aliases": ["rude"]},
+      {"text": "Phone use", "points": 15, "aliases": ["using phone"]},
+      {"text": "Money talk", "points": 12, "aliases": ["bill", "paying"]}
+    ]
+  },
+  {
+    "category": "office",
+    "question": "Name something people say when a meeting should have been an email.",
+    "answers": [
+      {"text": "This could have been an email", "points": 40, "aliases": ["email"]},
+      {"text": "Can everyone see my screen", "points": 20, "aliases": ["screen"]},
+      {"text": "You're on mute", "points": 18, "aliases": ["mute"]},
+      {"text": "Let's circle back", "points": 12, "aliases": ["circle back"]},
+      {"text": "Any questions", "points": 10, "aliases": ["questions"]}
+    ]
+  },
+  {
+    "category": "office",
+    "question": "Name something people steal from the office kitchen.",
+    "answers": [
+      {"text": "Milk", "points": 32, "aliases": []},
+      {"text": "Biscuits", "points": 25, "aliases": ["cookies"]},
+      {"text": "Mugs", "points": 18, "aliases": ["cup"]},
+      {"text": "Tea bags", "points": 15, "aliases": ["tea"]},
+      {"text": "Lunch", "points": 10, "aliases": ["sandwich"]}
+    ]
+  },
+  {
+    "category": "parenting",
+    "question": "Name something children suddenly need at bedtime.",
+    "answers": [
+      {"text": "Drink", "points": 31, "aliases": ["water"]},
+      {"text": "Toilet", "points": 27, "aliases": ["bathroom"]},
+      {"text": "Story", "points": 19, "aliases": ["book"]},
+      {"text": "Cuddle", "points": 13, "aliases": ["hug"]},
+      {"text": "Toy", "points": 10, "aliases": ["teddy"]}
+    ]
+  },
+  {
+    "category": "parenting",
+    "question": "Name something parents find in a child's pocket.",
+    "answers": [
+      {"text": "Tissues", "points": 28, "aliases": []},
+      {"text": "Stones", "points": 24, "aliases": ["rocks"]},
+      {"text": "Sweets", "points": 18, "aliases": ["candy"]},
+      {"text": "Coins", "points": 16, "aliases": ["money"]},
+      {"text": "Toy", "points": 14, "aliases": []}
+    ]
+  },
+  {
+    "category": "home",
+    "question": "Name something people clean only when guests are coming.",
+    "answers": [
+      {"text": "Bathroom", "points": 34, "aliases": ["toilet"]},
+      {"text": "Living room", "points": 24, "aliases": ["front room"]},
+      {"text": "Kitchen", "points": 18, "aliases": []},
+      {"text": "Windows", "points": 13, "aliases": []},
+      {"text": "Hallway", "points": 11, "aliases": ["entry"]}
+    ]
+  },
+  {
+    "category": "garden",
+    "question": "Name something that ruins a garden party.",
+    "answers": [
+      {"text": "Rain", "points": 39, "aliases": ["bad weather"]},
+      {"text": "Wasps", "points": 23, "aliases": ["bees"]},
+      {"text": "Neighbours", "points": 15, "aliases": ["neighbors"]},
+      {"text": "Burnt food", "points": 13, "aliases": ["barbecue"]},
+      {"text": "No chairs", "points": 10, "aliases": ["seating"]}
+    ]
+  },
+  {
+    "category": "hobbies",
+    "question": "Name a hobby people start in January and abandon by February.",
+    "answers": [
+      {"text": "Gym", "points": 35, "aliases": ["fitness"]},
+      {"text": "Running", "points": 23, "aliases": []},
+      {"text": "Dieting", "points": 18, "aliases": ["diet"]},
+      {"text": "Learning a language", "points": 14, "aliases": ["language"]},
+      {"text": "Cooking", "points": 10, "aliases": ["meal prep"]}
+    ]
+  },
+  {
+    "category": "hobbies",
+    "question": "Name something people collect even though they do not need more.",
+    "answers": [
+      {"text": "Mugs", "points": 28, "aliases": ["cups"]},
+      {"text": "Books", "points": 24, "aliases": []},
+      {"text": "Shoes", "points": 20, "aliases": ["trainers"]},
+      {"text": "Plants", "points": 16, "aliases": []},
+      {"text": "Board games", "points": 12, "aliases": ["games"]}
+    ]
+  },
+  {
+    "category": "discord",
+    "question": "Name something people do immediately after joining a Discord server.",
+    "answers": [
+      {"text": "Check the rules", "points": 30, "aliases": ["read rules"]},
+      {"text": "Pick roles", "points": 27, "aliases": ["roles"]},
+      {"text": "Say hello", "points": 18, "aliases": ["intro"]},
+      {"text": "Lurk", "points": 15, "aliases": ["say nothing"]},
+      {"text": "Change nickname", "points": 10, "aliases": ["nickname"]}
+    ]
+  },
+  {
+    "category": "random_weird",
+    "question": "Name something that would be suspicious if it whispered your name.",
+    "answers": [
+      {"text": "Fridge", "points": 31, "aliases": []},
+      {"text": "Doll", "points": 27, "aliases": ["toy"]},
+      {"text": "Mirror", "points": 18, "aliases": []},
+      {"text": "Toaster", "points": 14, "aliases": []},
+      {"text": "Plant", "points": 10, "aliases": []}
+    ]
+  },
+  {
+    "category": "music",
+    "question": "Name something people do when their favourite song comes on.",
+    "answers": [
+      {"text": "Sing", "points": 36, "aliases": ["sing along"]},
+      {"text": "Dance", "points": 27, "aliases": []},
+      {"text": "Turn it up", "points": 17, "aliases": ["volume"]},
+      {"text": "Tell everyone", "points": 11, "aliases": ["announce it"]},
+      {"text": "Record it", "points": 9, "aliases": ["film it"]}
+    ]
+  },
+  {
+    "category": "movies",
+    "question": "Name something people complain about at the cinema.",
+    "answers": [
+      {"text": "Talking", "points": 33, "aliases": ["people talking"]},
+      {"text": "Prices", "points": 24, "aliases": ["expensive"]},
+      {"text": "Phones", "points": 19, "aliases": ["phone screens"]},
+      {"text": "Sticky floors", "points": 14, "aliases": ["floor"]},
+      {"text": "Adverts", "points": 10, "aliases": ["ads", "trailers"]}
+    ]
+  },
+  {
+    "category": "gaming",
+    "question": "Name something gamers blame when they lose.",
+    "answers": [
+      {"text": "Lag", "points": 38, "aliases": ["ping"]},
+      {"text": "Controller", "points": 22, "aliases": ["keyboard", "mouse"]},
+      {"text": "Team mates", "points": 19, "aliases": ["team"]},
+      {"text": "Cheaters", "points": 12, "aliases": ["hacker"]},
+      {"text": "Bad luck", "points": 9, "aliases": ["rng"]}
+    ]
+  },
+  {
+    "category": "food",
+    "question": "Name something people always say they are just having one of.",
+    "answers": [
+      {"text": "Crisps", "points": 29, "aliases": ["chips"]},
+      {"text": "Biscuits", "points": 27, "aliases": ["cookies"]},
+      {"text": "Chocolate", "points": 21, "aliases": []},
+      {"text": "Chips", "points": 13, "aliases": ["fries"]},
+      {"text": "Sweets", "points": 10, "aliases": ["candy"]}
+    ]
+  },
+  {
+    "category": "drink",
+    "question": "Name a drink people pretend to like more than they do.",
+    "answers": [
+      {"text": "Coffee", "points": 30, "aliases": ["black coffee"]},
+      {"text": "Wine", "points": 24, "aliases": []},
+      {"text": "Beer", "points": 18, "aliases": []},
+      {"text": "Green juice", "points": 16, "aliases": ["smoothie"]},
+      {"text": "Whisky", "points": 12, "aliases": ["whiskey"]}
+    ]
+  },
+  {
+    "category": "sports",
+    "question": "Name something fans shout at the referee.",
+    "answers": [
+      {"text": "You're blind", "points": 34, "aliases": ["blind"]},
+      {"text": "Penalty", "points": 24, "aliases": []},
+      {"text": "Offside", "points": 18, "aliases": []},
+      {"text": "Send him off", "points": 14, "aliases": ["red card"]},
+      {"text": "Boo", "points": 10, "aliases": ["booing"]}
+    ]
+  },
+  {
+    "category": "pets",
+    "question": "Name something a pet does when you are trying to work.",
+    "answers": [
+      {"text": "Sits on keyboard", "points": 31, "aliases": ["keyboard"]},
+      {"text": "Barks", "points": 24, "aliases": []},
+      {"text": "Wants food", "points": 19, "aliases": ["begs"]},
+      {"text": "Sleeps nearby", "points": 14, "aliases": ["sleep"]},
+      {"text": "Knocks things over", "points": 12, "aliases": ["breaks things"]}
+    ]
+  },
+  {
+    "category": "travel",
+    "question": "Name something people panic about at the airport.",
+    "answers": [
+      {"text": "Passport", "points": 37, "aliases": []},
+      {"text": "Gate", "points": 21, "aliases": ["boarding gate"]},
+      {"text": "Luggage", "points": 18, "aliases": ["bags"]},
+      {"text": "Security", "points": 14, "aliases": []},
+      {"text": "Boarding pass", "points": 10, "aliases": ["ticket"]}
+    ]
+  },
+  {
+    "category": "money",
+    "question": "Name something people say right after checking their bank balance.",
+    "answers": [
+      {"text": "Oh no", "points": 32, "aliases": ["no"]},
+      {"text": "Where did it go", "points": 25, "aliases": ["where's my money"]},
+      {"text": "I am broke", "points": 20, "aliases": ["broke"]},
+      {"text": "Payday soon", "points": 13, "aliases": ["payday"]},
+      {"text": "Cancel plans", "points": 10, "aliases": ["stay in"]}
+    ]
+  },
+  {
+    "category": "love",
+    "question": "Name something people keep from an old relationship.",
+    "answers": [
+      {"text": "Photos", "points": 31, "aliases": ["pictures"]},
+      {"text": "Messages", "points": 23, "aliases": ["texts"]},
+      {"text": "Gifts", "points": 20, "aliases": ["present"]},
+      {"text": "Clothes", "points": 14, "aliases": ["hoodie"]},
+      {"text": "Memories", "points": 12, "aliases": []}
+    ]
+  },
+  {
+    "category": "school",
+    "question": "Name something students suddenly remember is due tomorrow.",
+    "answers": [
+      {"text": "Homework", "points": 38, "aliases": []},
+      {"text": "Essay", "points": 23, "aliases": []},
+      {"text": "Project", "points": 18, "aliases": []},
+      {"text": "Revision", "points": 11, "aliases": ["studying"]},
+      {"text": "Permission slip", "points": 10, "aliases": ["form"]}
+    ]
+  },
+  {
+    "category": "technology",
+    "question": "Name something people do when Wi-Fi stops working.",
+    "answers": [
+      {"text": "Restart router", "points": 35, "aliases": ["turn it off and on"]},
+      {"text": "Check phone", "points": 24, "aliases": ["mobile data"]},
+      {"text": "Complain", "points": 18, "aliases": ["moan"]},
+      {"text": "Ask if it is down", "points": 13, "aliases": ["is wifi down"]},
+      {"text": "Move rooms", "points": 10, "aliases": ["walk around"]}
+    ]
+  },
+  {
+    "category": "weather",
+    "question": "Name something people say when it starts raining.",
+    "answers": [
+      {"text": "Typical", "points": 28, "aliases": []},
+      {"text": "I forgot my umbrella", "points": 25, "aliases": ["umbrella"]},
+      {"text": "We needed it", "points": 17, "aliases": []},
+      {"text": "There goes the barbecue", "points": 16, "aliases": ["bbq"]},
+      {"text": "It was sunny earlier", "points": 14, "aliases": []}
+    ]
+  },
+  {
+    "category": "cars",
+    "question": "Name something people only notice after buying a used car.",
+    "answers": [
+      {"text": "Strange noise", "points": 32, "aliases": ["noise"]},
+      {"text": "Scratch", "points": 24, "aliases": ["dent"]},
+      {"text": "Warning light", "points": 19, "aliases": ["dashboard light"]},
+      {"text": "Smell", "points": 14, "aliases": []},
+      {"text": "Missing spare key", "points": 11, "aliases": ["key"]}
+    ]
+  },
+  {
+    "category": "crime",
+    "question": "Name something people hide before guests come over.",
+    "answers": [
+      {"text": "Mess", "points": 34, "aliases": ["clutter"]},
+      {"text": "Laundry", "points": 24, "aliases": ["washing"]},
+      {"text": "Dishes", "points": 18, "aliases": ["plates"]},
+      {"text": "Bills", "points": 13, "aliases": ["letters"]},
+      {"text": "Snacks", "points": 11, "aliases": ["food"]}
+    ]
+  },
+  {
+    "category": "memes",
+    "question": "Name something people say when a joke does not land.",
+    "answers": [
+      {"text": "Never mind", "points": 29, "aliases": []},
+      {"text": "You had to be there", "points": 26, "aliases": []},
+      {"text": "It was funny in my head", "points": 20, "aliases": []},
+      {"text": "Tough crowd", "points": 14, "aliases": []},
+      {"text": "I'll see myself out", "points": 11, "aliases": []}
+    ]
+  },
+  {
+    "category": "fantasy",
+    "question": "Name something a wizard would forget before leaving the tower.",
+    "answers": [
+      {"text": "Wand", "points": 37, "aliases": []},
+      {"text": "Spell book", "points": 24, "aliases": ["book"]},
+      {"text": "Hat", "points": 16, "aliases": []},
+      {"text": "Potion", "points": 13, "aliases": []},
+      {"text": "Keys", "points": 10, "aliases": []}
+    ]
+  },
+  {
+    "category": "sci_fi",
+    "question": "Name something that goes wrong on a spaceship.",
+    "answers": [
+      {"text": "Engine failure", "points": 31, "aliases": ["engine"]},
+      {"text": "Oxygen leak", "points": 24, "aliases": ["air leak"]},
+      {"text": "Alien attack", "points": 19, "aliases": ["aliens"]},
+      {"text": "Computer error", "points": 15, "aliases": ["ai"]},
+      {"text": "Meteor", "points": 11, "aliases": ["asteroid"]}
+    ]
+  },
+  {
+    "category": "horror",
+    "question": "Name something people should never do in a horror film.",
+    "answers": [
+      {"text": "Split up", "points": 36, "aliases": []},
+      {"text": "Go in the basement", "points": 24, "aliases": ["basement"]},
+      {"text": "Say hello", "points": 17, "aliases": ["call out"]},
+      {"text": "Drop the weapon", "points": 13, "aliases": ["weapon"]},
+      {"text": "Investigate noise", "points": 10, "aliases": ["noise"]}
+    ]
+  },
+  {
+    "category": "celebrities",
+    "question": "Name something celebrities apologise for online.",
+    "answers": [
+      {"text": "Old tweets", "points": 31, "aliases": ["posts"]},
+      {"text": "Bad joke", "points": 24, "aliases": []},
+      {"text": "Outfit", "points": 18, "aliases": ["clothes"]},
+      {"text": "Interview comment", "points": 15, "aliases": ["comment"]},
+      {"text": "Being late", "points": 12, "aliases": []}
+    ]
+  }
+]
