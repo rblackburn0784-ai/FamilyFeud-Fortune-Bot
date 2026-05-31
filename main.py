@@ -50,6 +50,8 @@ BOARD_REPOST_EVERY = 4
 IDLE_HOST_ENABLED = True
 IDLE_HOST_COOLDOWN_SECONDS = 45
 IDLE_HOST_RANDOM_CHANCE = 0.08
+IN_ROUND_HOST_COOLDOWN_SECONDS = 35
+IN_ROUND_HOST_RANDOM_CHANCE = 0.18
 HOST_NAMES = ["steve", "richard"]
 DIRECT_HOST_COOLDOWN_SECONDS = 8
 NEXT_ROUND_YES_VOTES_REQUIRED = 1
@@ -165,6 +167,42 @@ FEUD_CATEGORIES = [
     "hobbies"
 ]
 
+CATEGORY_ALIASES = {
+    "britain": "uk",
+    "british": "uk",
+    "england": "uk",
+    "great_britain": "uk",
+    "the_uk": "uk",
+    "mob": "mafia",
+    "mobster": "gangster",
+    "mobsters": "gangster",
+    "gangsters": "gangster",
+    "gangsta": "gangster",
+    "detective": "noir",
+    "detectives": "noir",
+    "the_dude": "dude",
+    "lebowski": "big_lebowski",
+    "the_big_lebowski": "big_lebowski",
+    "footy": "football",
+    "soccer": "football",
+    "tech": "technology",
+    "internet_memes": "memes",
+    "social": "social_media",
+    "socials": "social_media",
+    "family_feud": "general",
+    "general_knowledge": "general",
+    "weird": "random_weird",
+    "random_weirds": "random_weird",
+    "sci_fi": "sci_fi",
+    "scifi": "sci_fi",
+    "science_fiction": "sci_fi",
+    "superhero": "superheroes",
+    "cartoon": "cartoons",
+    "celebrity": "celebrities",
+    "pets": "pets",
+    "pet": "pets"
+}
+
 # ----------------------------
 # DATA MODELS
 # ----------------------------
@@ -244,7 +282,8 @@ def normalize_category(category: Optional[str]) -> str:
     category = category.replace(" ", "_")
     category = category.replace("-", "_")
 
-    return "_".join(category.split())
+    category = "_".join(category.split())
+    return CATEGORY_ALIASES.get(category, category)
 
 
 def normalize_mode(mode: Optional[str]) -> str:
@@ -412,6 +451,10 @@ def load_engagement_state() -> dict:
     return read_json_file(ENGAGEMENT_FILE, {
         "daily_surveys": {},
         "suggestions": {},
+        "alias_suggestions": {},
+        "approved_aliases": {},
+        "question_ratings": {},
+        "bad_answers": {},
         "team_rivalries": {},
         "player_rivalries": {},
         "last_reminders": {},
@@ -644,15 +687,19 @@ def pick_question(
     guild_id: Optional[int] = None,
     difficulty: str = "any"
 ) -> Optional[FeudQuestion]:
-    matching_questions = get_questions_for_category(category, guild_id=guild_id)
+    category_questions = get_questions_for_category(category, guild_id=guild_id)
+    matching_questions = category_questions
     difficulty = normalize_category(difficulty or "any")
 
     if difficulty != "any":
         matching_questions = [
             question
-            for question in matching_questions
+            for question in category_questions
             if question.difficulty == difficulty
         ]
+
+        if not matching_questions:
+            matching_questions = category_questions
 
     if not matching_questions:
         return None
@@ -846,6 +893,31 @@ IDLE_HOST_KEYWORD_RESPONSES = {
         "Lag? Classic. The official excuse of champions and cowards.",
         "That answer arrived three seconds late but blamed the Wi-Fi.",
         "Survey says... check your ping."
+    ],
+    "join": [
+        "Joining late is allowed. Pretending you knew the top answer all along is traditional.",
+        "Pick a team and bring either wisdom or entertaining chaos.",
+        "Late joiners are welcome. The board remembers everything."
+    ],
+    "start": [
+        "A start request? Excellent. The lights are warming up.",
+        "Someone wants a board. Finally, a responsible use of confidence.",
+        "Start the round and let the survey expose everyone equally."
+    ],
+    "steal": [
+        "Steal talk already? Bold. Slightly criminal. Very on brand.",
+        "Steals change friendships. Proceed with game-show caution.",
+        "A steal chance is where calm teams become theatre."
+    ],
+    "points": [
+        "Points are just feelings with numbers attached.",
+        "Everybody loves points until the other team gets them.",
+        "The board is generous only when it is in the mood."
+    ],
+    "fast": [
+        "Fast Money rewards instinct and punishes typing speed.",
+        "Fast Money is where sensible people become comma-separated disasters.",
+        "Five answers, one heartbeat, no time to explain yourself."
     ]
 }
 
@@ -870,7 +942,21 @@ IDLE_HOST_GENERIC_RESPONSES = [
     "That answer came in hot and parked badly.",
     "The survey says nothing yet, but emotionally, it is judging.",
     "That is the kind of answer that makes the host take two steps back.",
-    "I respect it. I fear it. I will not defend it."
+    "I respect it. I fear it. I will not defend it.",
+    "That message has the posture of an answer, but not necessarily the paperwork.",
+    "I have put that in the imaginary survey drawer marked 'concerning but possible'.",
+    "This channel is one confident noun away from a leaderboard incident.",
+    "The audience is quiet. That is rarely a compliment.",
+    "You are all making the board work overtime emotionally.",
+    "A brave thought. Brave and correct are distant cousins.",
+    "That feels like something someone shouts while losing by four points.",
+    "The survey appreciates brevity. The host appreciates drama.",
+    "That belongs somewhere. The question is whether it belongs here.",
+    "I am filing that under 'could score, could haunt us'.",
+    "Some answers walk to the board. That one arrived on a skateboard.",
+    "That had enough confidence to require its own postcode.",
+    "The board is saying nothing, which is honestly rude.",
+    "I admire the commitment to being possibly wrong."
 ]
 
 DIRECT_HOST_RESPONSES = [
@@ -888,7 +974,16 @@ DIRECT_HOST_RESPONSES = [
     "I am here, microphone in hand, emotionally unprepared.",
     "If this answer is wrong, I am stepping away from the podium.",
     "Alright, talk to me. What are we putting on the board?",
-    "That better be good. The imaginary audience is already leaning forward."
+    "That better be good. The imaginary audience is already leaning forward.",
+    "I am here. The suit is pressed, the board is suspicious.",
+    "You have my attention and, unfortunately, the survey's.",
+    "Go ahead. I have a buzzer and limited mercy.",
+    "The host has arrived. Please keep all guesses inside the moving vehicle.",
+    "I was enjoying the silence, but this is probably better television.",
+    "Speak clearly. If it is wrong, I want everyone to hear it.",
+    "You rang? I hope this is about points and not feelings.",
+    "The microphone is live. Dangerous time to have an opinion.",
+    "Yes? If this is a complaint, take it up with the 100 people."
 ]
 
 DIRECT_HOST_QUESTION_RESPONSES = [
@@ -901,7 +996,16 @@ DIRECT_HOST_QUESTION_RESPONSES = [
     "I cannot legally guarantee points, but I can guarantee drama.",
     "The survey is mysterious. The survey is cruel. The survey is rarely impressed.",
     "My gut says maybe. My face says absolutely not.",
-    "I have no idea, but I will react like I did."
+    "I have no idea, but I will react like I did.",
+    "If it feels obvious, it is either top answer or bait.",
+    "My advice is simple: say the thing your tired uncle would shout first.",
+    "The best answer is usually plain. The funniest answer is usually fatal.",
+    "Ask yourself: would five strangers in a shopping centre say it?",
+    "I would trust that answer with a small lead, not with my whole reputation.",
+    "That is either inspired or the start of a very short losing streak.",
+    "I think the board might accept it, but the board has betrayed me before.",
+    "If you need a committee to explain it, it is probably not on the board.",
+    "Try the answer that sounds boring enough to be true."
 ]
 
 HOST_PERSONALITY_LINES = {
@@ -914,17 +1018,29 @@ HOST_PERSONALITY_LINES = {
     "tv_host": [
         "We asked 100 people and the channel is already arguing.",
         "The lights are up, the board is waiting, and somebody is about to overthink it.",
-        "Give me a family, give me a buzzer, give me a suspiciously confident answer."
+        "Give me a family, give me a buzzer, give me a suspiciously confident answer.",
+        "The board is lit, the crowd is restless, and the next answer could change everything.",
+        "Top answers are waiting. Bad guesses are also waiting, somehow more loudly.",
+        "The survey is ready. Please welcome tonight's main event: misplaced certainty.",
+        "We are moments away from finding out who understands strangers best."
     ],
     "chaos": [
         "No active round. Dangerous. People may start forming opinions unsupervised.",
         "The board is asleep, but it is dreaming of bad guesses.",
-        "Someone start a round before the survey develops a personality."
+        "Someone start a round before the survey develops a personality.",
+        "The room is unsupervised and I can already hear a terrible answer forming.",
+        "No board, no rules, just vibes and future evidence.",
+        "The survey is off duty, which means the guesses may get ambitious.",
+        "Someone press a button before this becomes a philosophy channel."
     ],
     "strict": [
         "No round is active. Use `/feud_lobby` or `/feud_start`.",
         "Waiting for a host to start the next round.",
-        "Idle period noted. Prepare sensible answers."
+        "Idle period noted. Prepare sensible answers.",
+        "Please organise yourselves into teams before the confidence spreads.",
+        "Round status: inactive. Answer discipline: questionable.",
+        "Start a lobby when ready. Guessing at nothing remains unsupported.",
+        "The board will not judge until formally activated."
     ],
     "steve": [
         "Name something this channel is about to shout with too much confidence.",
@@ -949,7 +1065,11 @@ HOST_PERSONALITY_LINES = {
     "quizmaster": [
         "Stand by. The next question may expose troubling confidence.",
         "Please prepare one sensible answer and three regrettable ones.",
-        "The room is between rounds. This is when reputations are made."
+        "The room is between rounds. This is when reputations are made.",
+        "Consider the category carefully. Then ignore that and shout something obvious.",
+        "A good quizmaster waits. A great quizmaster quietly judges the waiting.",
+        "The next board will reward clarity and punish creative essays.",
+        "Remember: obvious answers are obvious because people actually say them."
     ]
 }
 
@@ -963,7 +1083,16 @@ WRONG_ANSWER_REACTIONS = [
     "❌ **Oof.** The board looked at that and changed the subject.",
     "❌ **Not there!** Bold answer, tragic outcome.",
     "❌ **Wrong answer!** The imaginary audience made a noise at that one.",
-    "❌ **No match!** That one came in wearing confidence and left with nothing."
+    "❌ **No match!** That one came in wearing confidence and left with nothing.",
+    "❌ **Not today!** The board shut the curtains on that.",
+    "❌ **No!** That answer had pace, but no destination.",
+    "❌ **Survey says no!** A brave swing into empty air.",
+    "❌ **Not up there!** The confidence was louder than the result.",
+    "❌ **Nothing!** That answer just tripped over the buzzer.",
+    "❌ **Denied!** The board has chosen emotional distance.",
+    "❌ **No points!** That one was more vibes than survey.",
+    "❌ **Bad luck!** I have seen quieter disasters score better.",
+    "❌ **Not on the board!** The audience is pretending to be supportive."
 ]
 
 CORRECT_ANSWER_REACTIONS = [
@@ -976,7 +1105,100 @@ CORRECT_ANSWER_REACTIONS = [
     "🔔 **The survey likes that one! {answer}!**",
     "✅ **Yes! {answer} was hiding up there!**",
     "🔔 **Show me... {answer}!**",
-    "✅ **The board accepts it! {answer}!**"
+    "✅ **The board accepts it! {answer}!**",
+    "🔔 **Yes indeed! {answer} lights up!**",
+    "✅ **That is survey gold! {answer}!**",
+    "🔔 **Right where it should be: {answer}!**",
+    "✅ **Clean answer! {answer} is up there!**",
+    "🔔 **You can hear the ding from here! {answer}!**",
+    "✅ **That one had board energy! {answer}!**",
+    "🔔 **The survey agrees! {answer}!**",
+    "✅ **There is the answer! {answer}!**",
+    "🔔 **Lovely work! {answer} was waiting!**"
+]
+
+ROUND_START_HOST_LINES = [
+    "The board is live. First answers are usually either genius or panic.",
+    "Teams are open. Pick a side before someone claims they were neutral all along.",
+    "Survey is loaded. Keep the guesses short, loud, and preferably correct.",
+    "The lights are on. The board is pretending not to be nervous.",
+    "This category looks friendly, which is exactly how trouble starts.",
+    "Remember: if your answer needs a paragraph, the survey probably did not say it.",
+    "Opening guesses set the tone. No pressure, except all of it.",
+    "The board is fresh. Try not to bruise it immediately.",
+    "Red and Blue, choose your people and your questionable instincts.",
+    "Someone is about to discover they think exactly like a stranger."
+]
+
+LOBBY_HOST_LINES = [
+    "Lobby is open. Join a team before the confident people organise themselves.",
+    "Vote for a category. Pick wisely, or at least pick loudly.",
+    "Red and Blue are recruiting. Prior experience with bad guesses not required.",
+    "The lobby is where strategy happens. Allegedly.",
+    "Choose a category and a team. The board will handle the emotional consequences.",
+    "This is the calm part before everyone starts shouting nouns.",
+    "A balanced team is nice. A dramatic team is better television.",
+    "Category voting is open. Democracy has rarely been this risky."
+]
+
+TEAM_JOIN_HOST_LINES = [
+    "Team sheet updated. Confidence has been redistributed.",
+    "A player has joined. The board pretends not to be intimidated.",
+    "Fresh teammate on the board. May their guesses be brief and useful.",
+    "The teams are forming. Alliances are temporary, wrong answers are forever.",
+    "Another player steps in. Excellent. More people to blame later.",
+    "Welcome to the team. Please leave all overthinking at the podium.",
+    "A new player has arrived with either answers or optimism.",
+    "That team just gained a voice. Whether that helps remains to be seen."
+]
+
+IN_ROUND_CORRECT_HOST_LINES = [
+    "That answer steadies the room a bit. Dangerous for the other team.",
+    "A clean hit. The board likes simple thinking more than anyone wants to admit.",
+    "That one landed nicely. Somebody has been listening to the imaginary survey.",
+    "Momentum is starting to look like a real thing now.",
+    "Good answer. The kind that makes the next guess feel easier than it is.",
+    "That opens the board up. Plenty still hiding in there.",
+    "A sensible answer in this economy. You love to see it.",
+    "The survey nods. Quietly. Judgementally."
+]
+
+IN_ROUND_WRONG_HOST_LINES = [
+    "That strike changes the room. You can feel everyone suddenly proofreading thoughts.",
+    "One step closer to steal territory. The other team just sat up.",
+    "The board did not like it, but the drama absolutely did.",
+    "Wrong answers are expensive when the other team is awake.",
+    "That one hurt, but at least it was quick.",
+    "The strike column is doing its job, unfortunately.",
+    "Careful now. The board is starting to smell a steal chance.",
+    "That answer made the other team believe in destiny."
+]
+
+IN_ROUND_PRESSURE_HOST_LINES = [
+    "Two strikes. This is where simple answers suddenly become difficult.",
+    "The steal door is not open yet, but someone is definitely rattling the handle.",
+    "One more miss and the other team gets to walk in like they own the place.",
+    "This is the dangerous bit: not enough strikes to panic, too many to relax.",
+    "The board is asking for calm. The chat is unlikely to provide it.",
+    "Pressure round now. Short answers. Deep breaths. No essays."
+]
+
+STEAL_HOST_LINES = [
+    "Steal chance. One answer, all the tension, no hiding behind the team chat.",
+    "This is where heroes are made and group chats get very quiet.",
+    "One guess to take the board. Make it obvious, or make it legendary.",
+    "The defending team has done the hard work. The stealing team may now be extremely annoying.",
+    "Steal time. The survey is about to become a courtroom.",
+    "One answer. One swing. Everyone suddenly has advice."
+]
+
+ROUND_END_HOST_LINES = [
+    "Rate the board if it felt good, and suggest aliases if the survey was being too picky.",
+    "That round had points, pain, and at least one answer worth remembering.",
+    "Take a breath. The next board is already pretending it will be easier.",
+    "Good round. The survey has returned to its cave to prepare more judgement.",
+    "Between rounds is a great time to check stats and pretend the wrong guesses were jokes.",
+    "If an answer should have counted, use the alias button. The host is teachable, allegedly."
 ]
 
 ACHIEVEMENTS = {
@@ -1201,6 +1423,7 @@ async def start_new_round_in_channel(
     game.board_message_id = board_message.id
     save_active_games()
     schedule_round_timer(channel, game)
+    await maybe_send_round_comment(channel, game, "round_start", force=True)
     return True
 
 
@@ -1374,6 +1597,54 @@ async def maybe_post_daily_survey(message: discord.Message, settings: dict) -> N
     save_engagement_state(ENGAGEMENT_STATE)
     await message.channel.send(embed=embed)
 
+
+async def maybe_send_host_line(
+    channel: discord.abc.Messageable,
+    guild_id: Optional[int],
+    lines: List[str],
+    force: bool = False,
+    cooldown_seconds: int = IN_ROUND_HOST_COOLDOWN_SECONDS
+) -> None:
+    if not lines:
+        return
+
+    settings = get_server_settings(guild_id)
+
+    if settings["quiet_mode"] or not settings["idle_host_enabled"]:
+        return
+
+    channel_id = channel.id
+    now = time.time()
+    last_comment = last_in_round_host_comment.get(channel_id, 0)
+
+    if now - last_comment < cooldown_seconds:
+        return
+
+    if not force and random.random() > IN_ROUND_HOST_RANDOM_CHANCE:
+        return
+
+    last_in_round_host_comment[channel_id] = now
+    await channel.send(random.choice(lines))
+
+
+async def maybe_send_round_comment(
+    channel: discord.abc.Messageable,
+    game: ChannelGame,
+    event: str,
+    force: bool = False
+) -> None:
+    line_banks = {
+        "correct": IN_ROUND_CORRECT_HOST_LINES,
+        "wrong": IN_ROUND_WRONG_HOST_LINES,
+        "pressure": IN_ROUND_PRESSURE_HOST_LINES,
+        "steal": STEAL_HOST_LINES,
+        "round_end": ROUND_END_HOST_LINES,
+        "round_start": ROUND_START_HOST_LINES,
+        "lobby": LOBBY_HOST_LINES
+    }
+    await maybe_send_host_line(channel, game.guild_id, line_banks.get(event, []), force=force)
+
+
 def message_mentions_host_name(message_content: str) -> bool:
     cleaned = normalize_text(message_content)
 
@@ -1513,11 +1784,25 @@ def stable_daily_index() -> int:
 def get_guild_engagement(guild_id: int) -> dict:
     guild_key = str(guild_id)
 
-    for section in ["daily_surveys", "suggestions", "team_rivalries", "player_rivalries", "last_reminders"]:
+    for section in [
+        "daily_surveys",
+        "suggestions",
+        "alias_suggestions",
+        "approved_aliases",
+        "question_ratings",
+        "bad_answers",
+        "team_rivalries",
+        "player_rivalries",
+        "last_reminders"
+    ]:
         ENGAGEMENT_STATE.setdefault(section, {})
 
     ENGAGEMENT_STATE["daily_surveys"].setdefault(guild_key, {})
     ENGAGEMENT_STATE["suggestions"].setdefault(guild_key, [])
+    ENGAGEMENT_STATE["alias_suggestions"].setdefault(guild_key, [])
+    ENGAGEMENT_STATE["approved_aliases"].setdefault(guild_key, {})
+    ENGAGEMENT_STATE["question_ratings"].setdefault(guild_key, {})
+    ENGAGEMENT_STATE["bad_answers"].setdefault(guild_key, [])
     ENGAGEMENT_STATE["team_rivalries"].setdefault(guild_key, {
         "red_wins": 0,
         "blue_wins": 0,
@@ -1528,6 +1813,10 @@ def get_guild_engagement(guild_id: int) -> dict:
     return {
         "daily_surveys": ENGAGEMENT_STATE["daily_surveys"][guild_key],
         "suggestions": ENGAGEMENT_STATE["suggestions"][guild_key],
+        "alias_suggestions": ENGAGEMENT_STATE["alias_suggestions"][guild_key],
+        "approved_aliases": ENGAGEMENT_STATE["approved_aliases"][guild_key],
+        "question_ratings": ENGAGEMENT_STATE["question_ratings"][guild_key],
+        "bad_answers": ENGAGEMENT_STATE["bad_answers"][guild_key],
         "team_rivalries": ENGAGEMENT_STATE["team_rivalries"][guild_key],
         "player_rivalries": ENGAGEMENT_STATE["player_rivalries"][guild_key]
     }
@@ -1561,6 +1850,167 @@ def make_daily_survey_embed(guild_id: int) -> discord.Embed:
     else:
         embed.add_field(name="Current Crowd Answers", value="No answers yet.", inline=False)
 
+    return embed
+
+
+def find_question_by_id(qid: str, guild_id: Optional[int] = None) -> Optional[FeudQuestion]:
+    for question in get_all_questions(guild_id):
+        if question_id(question) == qid:
+            return question
+    return None
+
+
+def apply_approved_aliases_to_questions() -> None:
+    approved_by_guild = ENGAGEMENT_STATE.setdefault("approved_aliases", {})
+    all_questions = QUESTIONS + [
+        question
+        for questions in CUSTOM_QUESTIONS.values()
+        for question in questions
+    ]
+
+    for guild_aliases in approved_by_guild.values():
+        for qid, answer_aliases in guild_aliases.items():
+            for question in all_questions:
+                if question_id(question) != qid:
+                    continue
+
+                for answer in question.answers:
+                    aliases = answer_aliases.get(answer.text, [])
+
+                    for alias in aliases:
+                        if alias not in answer.aliases:
+                            answer.aliases.append(alias)
+
+
+def register_question_rating(
+    guild_id: int,
+    question: FeudQuestion,
+    user_id: int,
+    rating: str
+) -> dict:
+    guild_data = get_guild_engagement(guild_id)
+    qid = question_id(question)
+    ratings = guild_data["question_ratings"].setdefault(qid, {
+        "question": question.question,
+        "category": question.category,
+        "good": [],
+        "bad": []
+    })
+
+    for bucket in ["good", "bad"]:
+        if user_id in ratings[bucket]:
+            ratings[bucket].remove(user_id)
+
+    ratings[rating].append(user_id)
+    save_engagement_state(ENGAGEMENT_STATE)
+    return ratings
+
+
+def record_bad_answer(
+    guild_id: Optional[int],
+    question: FeudQuestion,
+    guess: str,
+    display_name: str
+) -> None:
+    if guild_id is None or not guess:
+        return
+
+    guild_data = get_guild_engagement(guild_id)
+    guild_data["bad_answers"].append({
+        "question": question.question,
+        "category": question.category,
+        "guess": guess[:120],
+        "player": display_name,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    del guild_data["bad_answers"][:-50]
+    save_engagement_state(ENGAGEMENT_STATE)
+
+
+def create_bad_answers_embed(guild_id: int) -> discord.Embed:
+    guild_data = get_guild_engagement(guild_id)
+    recent = list(reversed(guild_data["bad_answers"][-10:]))
+    embed = discord.Embed(
+        title="Wrong Guess Hall of Fame",
+        color=discord.Color.dark_gold()
+    )
+
+    if not recent:
+        embed.description = "No wrong guesses have been recorded yet."
+        return embed
+
+    embed.description = "\n".join(
+        f"**{item['player']}** guessed `{item['guess']}` in `{format_category_name(item['category'])}`"
+        for item in recent
+    )
+    return embed
+
+
+def create_quality_review_embed(guild_id: int) -> discord.Embed:
+    guild_data = get_guild_engagement(guild_id)
+    ratings = guild_data["question_ratings"]
+    alias_suggestions = guild_data["alias_suggestions"]
+    weak_questions = sorted(
+        ratings.values(),
+        key=lambda item: len(item.get("bad", [])) - len(item.get("good", [])),
+        reverse=True
+    )[:5]
+
+    embed = discord.Embed(
+        title="Question Quality Review",
+        color=discord.Color.orange()
+    )
+
+    if weak_questions:
+        lines = [
+            f"`-{len(item.get('bad', []))}` `+{len(item.get('good', []))}` "
+            f"{format_category_name(item.get('category', 'general'))}: {item.get('question', 'Unknown')[:80]}"
+            for item in weak_questions
+        ]
+        embed.add_field(name="Needs Attention", value="\n".join(lines), inline=False)
+    else:
+        embed.add_field(name="Needs Attention", value="No rated problem questions yet.", inline=False)
+
+    if alias_suggestions:
+        lines = [
+            f"**{index}.** `{item['answer']}` should accept `{item['alias']}`"
+            for index, item in enumerate(alias_suggestions[-5:], start=max(1, len(alias_suggestions) - 4))
+        ]
+        embed.add_field(name="Alias Suggestions", value="\n".join(lines), inline=False)
+    else:
+        embed.add_field(name="Alias Suggestions", value="No pending aliases.", inline=False)
+
+    return embed
+
+
+def create_player_profile_embed(guild_id: int, member: Any) -> discord.Embed:
+    user_data = SERVER_SCORES.get(str(guild_id), {}).get(str(member.id))
+
+    if not user_data:
+        return discord.Embed(
+            title=f"{member.display_name}'s Family Fortunes Profile",
+            description="No profile exists yet. Join a round and get on the board.",
+            color=discord.Color.green()
+        )
+
+    refresh_period_scores(user_data)
+    total_points = user_data.get("total_points", 0)
+    correct = user_data.get("correct_answers", 0)
+    wrong = user_data.get("wrong_answers", 0)
+    guesses = correct + wrong
+    accuracy = round((correct / guesses) * 100) if guesses else 0
+
+    embed = discord.Embed(
+        title=f"{member.display_name}'s Family Fortunes Profile",
+        color=discord.Color.green()
+    )
+    embed.add_field(name="Lifetime", value=f"`{total_points}` pts | `{accuracy}%` accuracy", inline=False)
+    embed.add_field(name="This Week", value=f"`{user_data.get('weekly_points', 0)}` pts", inline=True)
+    embed.add_field(name="Today", value=f"`{user_data.get('daily_points', 0)}` pts", inline=True)
+    embed.add_field(name="Best Streak", value=f"`{user_data.get('best_streak', 0)}`", inline=True)
+    embed.add_field(name="Rounds", value=f"`{user_data.get('rounds_played', 0)}` played | `{user_data.get('games_won', 0)}` won", inline=False)
+    embed.add_field(name="Favorite Team", value=format_category_name(user_data.get("favorite_team") or "none"), inline=True)
+    embed.add_field(name="Achievements", value=get_achievement_summary(user_data), inline=False)
     return embed
 
 
@@ -1976,6 +2426,104 @@ SPELLING_VARIANTS = {
 }
 
 
+COMMON_ANSWER_ALIASES = {
+    "phone": ["mobile", "cell", "cellphone", "cell phone", "telephone", "smartphone"],
+    "mobile": ["phone", "cell", "cellphone", "cell phone", "smartphone"],
+    "wi-fi": ["wifi", "internet", "wireless", "broadband"],
+    "wifi": ["wi-fi", "internet", "wireless", "broadband"],
+    "tv": ["television", "telly"],
+    "television": ["tv", "telly"],
+    "crisps": ["chips", "potato chips"],
+    "chips": ["fries", "crisps"],
+    "fries": ["chips"],
+    "sweets": ["candy", "sweeties"],
+    "candy": ["sweets", "sweeties"],
+    "biscuits": ["cookies"],
+    "cookies": ["biscuits"],
+    "football": ["soccer", "footy"],
+    "soccer": ["football", "footy"],
+    "mum": ["mom", "mother", "mam"],
+    "mother": ["mum", "mom", "mam"],
+    "dad": ["father", "pa"],
+    "father": ["dad", "pa"],
+    "nan": ["grandma", "grandmother", "nanna"],
+    "grandad": ["grandpa", "grandfather"],
+    "police": ["cop", "cops", "officer", "officers", "law"],
+    "cop": ["police", "cops", "officer"],
+    "officer": ["police", "cop", "cops"],
+    "detective": ["investigator", "sleuth", "private eye"],
+    "gun": ["pistol", "weapon", "firearm"],
+    "pistol": ["gun", "weapon", "firearm"],
+    "money": ["cash", "notes", "coins"],
+    "cash": ["money", "notes"],
+    "car": ["auto", "vehicle", "motor"],
+    "vehicle": ["car", "auto", "motor"],
+    "petrol": ["gas", "fuel"],
+    "gas": ["petrol", "fuel"],
+    "holiday": ["vacation", "trip"],
+    "vacation": ["holiday", "trip"],
+    "queue": ["line"],
+    "lift": ["elevator"],
+    "flat": ["apartment"],
+    "rubbish": ["trash", "garbage"],
+    "trainers": ["sneakers", "shoes"],
+    "hoover": ["vacuum", "vacuum cleaner"],
+    "remote": ["remote control", "clicker"],
+    "sofa": ["couch", "settee"],
+    "takeaway": ["takeout", "delivery"],
+    "takeout": ["takeaway"],
+    "film": ["movie"],
+    "movie": ["film"],
+    "advert": ["ad", "commercial"],
+    "ad": ["advert", "commercial"],
+    "password": ["passcode", "login"],
+    "email": ["e-mail", "mail"],
+    "message": ["text", "dm"],
+    "messages": ["texts", "dms"],
+    "photo": ["picture", "pic"],
+    "photos": ["pictures", "pics"],
+    "present": ["gift"],
+    "presents": ["gifts"],
+    "lawyer": ["solicitor", "attorney"],
+    "solicitor": ["lawyer", "attorney"],
+    "whisky": ["whiskey"],
+    "whiskey": ["whisky"],
+    "sci fi": ["science fiction", "scifi"],
+    "test tube": ["beaker"],
+    "var": ["video assistant referee"],
+    "boss": ["manager", "gaffer"],
+    "manager": ["boss", "gaffer"],
+    "teacher": ["sir", "miss", "professor"],
+    "doctor": ["doc", "gp"],
+    "pub": ["bar", "boozer"],
+    "bar": ["pub", "boozer"],
+    "beer": ["lager", "pint", "ale"],
+    "lager": ["beer", "pint"],
+    "villain": ["bad guy", "baddie"],
+    "hero": ["superhero"],
+    "alien": ["extraterrestrial", "et"],
+    "ghost": ["spirit"],
+    "zombie": ["undead"],
+    "vampire": ["dracula"],
+    "gift": ["present"],
+    "baby": ["infant", "newborn"],
+    "kid": ["child"],
+    "children": ["kids"],
+    "child": ["kid"],
+    "dog": ["puppy"],
+    "cat": ["kitten"],
+    "crime": ["offence", "offense"],
+    "jail": ["prison"],
+    "prison": ["jail"],
+    "gangster": ["mobster", "wise guy"],
+    "mobster": ["gangster", "wise guy"],
+    "bowling ball": ["ball"],
+    "strike": ["x"],
+    "glasses": ["specs", "spectacles"],
+    "spectacles": ["glasses", "specs"]
+}
+
+
 def simple_singular(text: str) -> str:
     words = []
 
@@ -1995,6 +2543,23 @@ def simple_singular(text: str) -> str:
 def expand_match_terms(text: str) -> List[str]:
     normalized = normalize_text(text)
     terms = {normalized, simple_singular(normalized)}
+
+    aliases = set(COMMON_ANSWER_ALIASES.get(normalized, []))
+    for answer, answer_aliases in COMMON_ANSWER_ALIASES.items():
+        normalized_aliases = {normalize_text(alias) for alias in answer_aliases}
+        if normalized in normalized_aliases:
+            aliases.add(answer)
+            aliases.update(normalized_aliases)
+
+    for alias in aliases:
+        alias = normalize_text(alias)
+        terms.add(alias)
+        terms.add(simple_singular(alias))
+
+    if " " in normalized:
+        terms.add(normalized.replace(" ", ""))
+        terms.add(normalized.replace(" ", "-"))
+
     words = normalized.split()
     variant_words = [SPELLING_VARIANTS.get(word, word) for word in words]
     reverse_variants = {value: key for key, value in SPELLING_VARIANTS.items()}
@@ -2380,6 +2945,7 @@ engagement_background_task: Optional[asyncio.Task] = None
 
 last_idle_host_comment: Dict[int, float] = {}
 last_direct_host_comment: Dict[int, float] = {}
+last_in_round_host_comment: Dict[int, float] = {}
 
 
 def game_to_dict(game: ChannelGame) -> dict:
@@ -2565,6 +3131,7 @@ async def round_timer_worker(channel: discord.abc.Messageable, game: ChannelGame
             final_embed = create_final_embed(game, "⏱️ Time is up!")
             await channel.send(embed=final_embed)
             end_active_game(game.channel_id, game)
+            await post_round_feedback(channel, game)
             await post_next_round_vote(channel, category=game.question.category)
             return
 
@@ -2642,6 +3209,8 @@ async def reveal_answer_number(
 
     game.revealed[index] = True
     answer = game.question.answers[index]
+    await channel.send(f"🎬 **Board flip...** revealing slot `{number}`.")
+    await asyncio.sleep(0.7)
     await channel.send(f"🎬 **{reason}:** `{number}. {answer.text}` for `{answer.points}` points.")
     await update_board_message(channel, game, force_new=True)
     save_active_games()
@@ -2649,6 +3218,7 @@ async def reveal_answer_number(
     if all_answers_revealed(game):
         await channel.send(embed=create_final_embed(game, "✅ The board has been fully revealed."))
         end_active_game(game.channel_id, game)
+        await post_round_feedback(channel, game)
         await post_next_round_vote(channel, category=game.question.category)
 
     return True
@@ -2659,6 +3229,7 @@ async def reveal_all_answers(channel: discord.abc.Messageable, game: ChannelGame
     await update_board_message(channel, game, force_new=True)
     await channel.send(embed=create_final_embed(game, reason))
     end_active_game(game.channel_id, game)
+    await post_round_feedback(channel, game)
     await post_next_round_vote(channel, category=game.question.category)
 
 
@@ -2761,6 +3332,7 @@ class FeudAdminView(discord.ui.View):
         final_embed = create_final_embed(game, "🛑 The host stopped the round.")
         end_active_game(self.channel_id, game)
         await interaction.response.send_message(embed=final_embed)
+        await post_round_feedback(interaction.channel, game)
 
 
 class TeamJoinView(discord.ui.View):
@@ -2798,6 +3370,7 @@ class ActiveTeamJoinButton(discord.ui.Button):
         save_active_games()
         await update_board_message(interaction.channel, game)
         await interaction.response.send_message(f"You joined **{format_category_name(self.team)} Team**.", ephemeral=True)
+        await maybe_send_host_line(interaction.channel, game.guild_id, TEAM_JOIN_HOST_LINES)
 
 
 def pick_vote_categories() -> List[str]:
@@ -2911,6 +3484,11 @@ class LobbyJoinButton(discord.ui.Button):
 
         await view.refresh(interaction)
         await interaction.response.send_message(f"You joined **{format_category_name(self.team)} Team**.", ephemeral=True)
+        await maybe_send_host_line(
+            interaction.channel,
+            interaction.guild.id if interaction.guild else None,
+            TEAM_JOIN_HOST_LINES
+        )
 
 
 class LobbyStartButton(discord.ui.Button):
@@ -3023,6 +3601,864 @@ class MiniPollRevealButton(discord.ui.Button):
             await interaction.message.edit(embed=view.embed(revealed=True), view=None)
         await interaction.response.send_message("Revealed the mini poll.", ephemeral=True)
 
+
+class AliasSuggestionModal(discord.ui.Modal, title="Suggest an Alias"):
+    answer = discord.ui.TextInput(
+        label="Board answer",
+        placeholder="Example: Police",
+        max_length=80
+    )
+    alias = discord.ui.TextInput(
+        label="Alias to accept",
+        placeholder="Example: cops",
+        max_length=80
+    )
+    note = discord.ui.TextInput(
+        label="Optional note",
+        style=discord.TextStyle.paragraph,
+        required=False,
+        max_length=240
+    )
+
+    def __init__(self, guild_id: int, question: FeudQuestion):
+        super().__init__()
+        self.guild_id = guild_id
+        self.question = question
+
+    async def on_submit(self, interaction: discord.Interaction):
+        guild_data = get_guild_engagement(self.guild_id)
+        guild_data["alias_suggestions"].append({
+            "qid": question_id(self.question),
+            "question": self.question.question,
+            "category": self.question.category,
+            "answer": self.answer.value.strip(),
+            "alias": self.alias.value.strip(),
+            "note": self.note.value.strip(),
+            "author_id": interaction.user.id,
+            "author_name": interaction.user.display_name,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        save_engagement_state(ENGAGEMENT_STATE)
+        await interaction.response.send_message("Alias suggestion saved for host review.", ephemeral=True)
+
+
+class RoundFeedbackView(discord.ui.View):
+    def __init__(self, game: ChannelGame):
+        super().__init__(timeout=1800)
+        self.guild_id = game.guild_id
+        self.question = game.question
+
+    async def save_rating(self, interaction: discord.Interaction, rating: str) -> None:
+        if self.guild_id is None:
+            await interaction.response.send_message("Ratings only work inside a server.", ephemeral=True)
+            return
+
+        ratings = register_question_rating(self.guild_id, self.question, interaction.user.id, rating)
+        await interaction.response.send_message(
+            f"Rating saved. Current score: `+{len(ratings['good'])}` / `-{len(ratings['bad'])}`.",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Good Board", style=discord.ButtonStyle.success)
+    async def good_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.save_rating(interaction, "good")
+
+    @discord.ui.button(label="Needs Work", style=discord.ButtonStyle.danger)
+    async def bad_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.save_rating(interaction, "bad")
+
+    @discord.ui.button(label="Suggest Alias", style=discord.ButtonStyle.secondary)
+    async def alias_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.guild_id is None:
+            await interaction.response.send_message("Alias suggestions only work inside a server.", ephemeral=True)
+            return
+
+        await interaction.response.send_modal(AliasSuggestionModal(self.guild_id, self.question))
+
+
+async def post_round_feedback(channel: discord.abc.Messageable, game: ChannelGame) -> None:
+    if game.guild_id is None:
+        return
+
+    await maybe_send_host_line(
+        channel,
+        game.guild_id,
+        ROUND_END_HOST_LINES,
+        force=True,
+        cooldown_seconds=8
+    )
+    embed = discord.Embed(
+        title="Rate This Board",
+        description=(
+            f"`{format_category_name(game.question.category)}`\n"
+            f"**{game.question.question}**"
+        ),
+        color=discord.Color.blurple()
+    )
+    embed.set_footer(text="Ratings help hosts find weak questions. Alias suggestions help improve matching.")
+    await channel.send(embed=embed, view=RoundFeedbackView(game))
+
+
+class QualityReviewView(discord.ui.View):
+    def __init__(self, guild_id: int):
+        super().__init__(timeout=900)
+        self.guild_id = guild_id
+
+    async def ensure_host(self, interaction: discord.Interaction) -> bool:
+        if await interaction_has_host_permission(interaction):
+            return True
+
+        await interaction.response.send_message("Host review needs Manage Messages.", ephemeral=True)
+        return False
+
+    @discord.ui.button(label="Approve First Alias", style=discord.ButtonStyle.success)
+    async def approve_alias_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        guild_data = get_guild_engagement(self.guild_id)
+        suggestions = guild_data["alias_suggestions"]
+
+        if not suggestions:
+            await interaction.response.send_message("No alias suggestions are waiting.", ephemeral=True)
+            return
+
+        suggestion = suggestions.pop(0)
+        question = find_question_by_id(suggestion["qid"], self.guild_id)
+
+        if not question:
+            save_engagement_state(ENGAGEMENT_STATE)
+            await interaction.response.send_message("That question could not be found, so the suggestion was removed.", ephemeral=True)
+            return
+
+        matched_answer = None
+
+        for answer in question.answers:
+            if normalize_text(answer.text) == normalize_text(suggestion["answer"]):
+                matched_answer = answer
+                break
+
+        if not matched_answer:
+            suggestions.insert(0, suggestion)
+            await interaction.response.send_message("I could not match that answer text. Edit or dismiss the suggestion.", ephemeral=True)
+            return
+
+        alias = normalize_text(suggestion["alias"])
+
+        if alias and alias not in matched_answer.aliases:
+            matched_answer.aliases.append(alias)
+
+        qid = question_id(question)
+        approved = guild_data["approved_aliases"].setdefault(qid, {})
+        aliases = approved.setdefault(matched_answer.text, [])
+
+        if alias and alias not in aliases:
+            aliases.append(alias)
+
+        save_engagement_state(ENGAGEMENT_STATE)
+        save_custom_questions(CUSTOM_QUESTIONS)
+
+        if interaction.message:
+            await interaction.message.edit(embed=create_quality_review_embed(self.guild_id), view=self)
+
+        await interaction.response.send_message(
+            f"Approved `{alias}` for **{matched_answer.text}**.",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Dismiss First Alias", style=discord.ButtonStyle.danger)
+    async def dismiss_alias_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        guild_data = get_guild_engagement(self.guild_id)
+
+        if not guild_data["alias_suggestions"]:
+            await interaction.response.send_message("No alias suggestions are waiting.", ephemeral=True)
+            return
+
+        removed = guild_data["alias_suggestions"].pop(0)
+        save_engagement_state(ENGAGEMENT_STATE)
+
+        if interaction.message:
+            await interaction.message.edit(embed=create_quality_review_embed(self.guild_id), view=self)
+
+        await interaction.response.send_message(
+            f"Dismissed `{removed['alias']}` for `{removed['answer']}`.",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Refresh", style=discord.ButtonStyle.secondary)
+    async def refresh_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        await interaction.response.edit_message(embed=create_quality_review_embed(self.guild_id), view=self)
+
+
+def menu_embed() -> discord.Embed:
+    embed = discord.Embed(
+        title="Family Fortunes Menu",
+        description="Pick what you want to do next.",
+        color=discord.Color.gold()
+    )
+    embed.add_field(
+        name="Play",
+        value="Start a round, join a team, vote on categories, or play Fast Money.",
+        inline=False
+    )
+    embed.add_field(
+        name="Profile",
+        value="View your stats, badges, achievements, daily survey, and wrong-guess highlights.",
+        inline=False
+    )
+    return embed
+
+
+class FeudMenuView(discord.ui.View):
+    def __init__(self, channel_id: int):
+        super().__init__(timeout=900)
+        self.channel_id = channel_id
+
+    @discord.ui.button(label="Start", style=discord.ButtonStyle.success, row=0)
+    async def start_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        view = StartWizardView(interaction.channel_id)
+        await interaction.response.send_message(embed=view.embed(), view=view, ephemeral=True)
+
+    @discord.ui.button(label="Join", style=discord.ButtonStyle.primary, row=0)
+    async def join_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.channel_id not in active_games:
+            await interaction.response.send_message("No round is active in this channel yet.", ephemeral=True)
+            return
+
+        await interaction.response.send_message("Choose your team.", view=TeamJoinView(interaction.channel_id), ephemeral=True)
+
+    @discord.ui.button(label="Vote", style=discord.ButtonStyle.secondary, row=0)
+    async def vote_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        view = CategoryVoteView(interaction.channel_id)
+        embed = discord.Embed(
+            title="Vote for a Category",
+            description=view.summary(),
+            color=discord.Color.blurple()
+        )
+        await interaction.response.send_message(embed=embed, view=view)
+
+    @discord.ui.button(label="Fast Money", style=discord.ButtonStyle.secondary, row=0)
+    async def fast_money_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        view = StartWizardView(interaction.channel_id, mode="fast_money")
+        await interaction.response.send_message(embed=view.embed(), view=view, ephemeral=True)
+
+    @discord.ui.button(label="Stats", style=discord.ButtonStyle.secondary, row=1)
+    async def stats_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not interaction.guild:
+            await interaction.response.send_message("Stats only work inside a server.", ephemeral=True)
+            return
+
+        await interaction.response.send_message(
+            embed=create_player_profile_embed(interaction.guild.id, interaction.user),
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Badges", style=discord.ButtonStyle.secondary, row=1)
+    async def badges_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not interaction.guild:
+            await interaction.response.send_message("Badges only work inside a server.", ephemeral=True)
+            return
+
+        user_data = SERVER_SCORES.get(str(interaction.guild.id), {}).get(str(interaction.user.id))
+        embed = discord.Embed(title="Your Achievements", color=discord.Color.gold())
+        embed.description = get_achievement_summary(user_data or {})
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @discord.ui.button(label="Daily", style=discord.ButtonStyle.secondary, row=1)
+    async def daily_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not interaction.guild:
+            await interaction.response.send_message("Daily surveys only work inside a server.", ephemeral=True)
+            return
+
+        embed = make_daily_survey_embed(interaction.guild.id)
+        get_guild_engagement(interaction.guild.id)["daily_surveys"][today_key()]["posted"] = True
+        save_engagement_state(ENGAGEMENT_STATE)
+        await interaction.response.send_message(embed=embed)
+
+    @discord.ui.button(label="Wrong Guesses", style=discord.ButtonStyle.secondary, row=1)
+    async def bad_answers_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not interaction.guild:
+            await interaction.response.send_message("Wrong-guess highlights only work inside a server.", ephemeral=True)
+            return
+
+        await interaction.response.send_message(embed=create_bad_answers_embed(interaction.guild.id), ephemeral=True)
+
+    @discord.ui.button(label="Review", style=discord.ButtonStyle.danger, row=2)
+    async def review_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not interaction.guild:
+            await interaction.response.send_message("Review only works inside a server.", ephemeral=True)
+            return
+
+        if not await interaction_has_host_permission(interaction):
+            await interaction.response.send_message("Host review needs Manage Messages.", ephemeral=True)
+            return
+
+        await interaction.response.send_message(
+            embed=create_quality_review_embed(interaction.guild.id),
+            view=QualityReviewView(interaction.guild.id),
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Admin", style=discord.ButtonStyle.danger, row=2)
+    async def admin_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not interaction.guild:
+            await interaction.response.send_message("Admin controls only work inside a server.", ephemeral=True)
+            return
+
+        if not await interaction_has_host_permission(interaction):
+            await interaction.response.send_message("Admin controls need Manage Messages.", ephemeral=True)
+            return
+
+        await interaction.response.send_message(
+            embed=create_admin_overview_embed(interaction),
+            view=AdminMenuView(interaction.channel_id, interaction.guild.id),
+            ephemeral=True
+        )
+
+
+class StartWizardView(discord.ui.View):
+    def __init__(self, channel_id: int, category: str = "random", mode: str = "classic", difficulty: str = "any"):
+        super().__init__(timeout=600)
+        self.channel_id = channel_id
+        self.category = normalize_category(category)
+        self.mode = normalize_mode(mode)
+        self.difficulty = normalize_category(difficulty)
+        self.add_item(StartCategorySelect())
+        self.add_item(StartDifficultySelect())
+        self.add_item(StartModeSelect())
+        self.add_item(StartWizardButton())
+
+    def embed(self) -> discord.Embed:
+        embed = discord.Embed(
+            title="Start Round Wizard",
+            description="Choose a category, difficulty, and game type, then start the board.",
+            color=discord.Color.green()
+        )
+        embed.add_field(name="Category", value=f"`{format_category_name(self.category)}`", inline=True)
+        embed.add_field(name="Difficulty", value=f"`{format_category_name(self.difficulty)}`", inline=True)
+        embed.add_field(name="Game Type", value=f"`{format_category_name(self.mode)}`", inline=True)
+        return embed
+
+
+class StartCategorySelect(discord.ui.Select):
+    def __init__(self):
+        featured = [
+            "random",
+            "pack:party_mix",
+            "pack:pub_quiz",
+            "pack:movie_night",
+            "pack:work_safe",
+            "pack:holiday",
+            "pack:chaos",
+            "pack:fresh",
+            "pack:weekend",
+            "gangster",
+            "food",
+            "drink",
+            "music",
+            "movies",
+            "tv",
+            "gaming",
+            "football",
+            "christmas",
+            "wedding",
+            "family",
+            "history",
+            "science",
+            "memes",
+            "technology",
+            "random_weird"
+        ]
+        options = [
+            discord.SelectOption(label=format_category_name(category), value=category)
+            for category in featured[:25]
+        ]
+        super().__init__(placeholder="Category or pack", options=options, row=0)
+
+    async def callback(self, interaction: discord.Interaction):
+        view: StartWizardView = self.view
+        view.category = self.values[0]
+        await interaction.response.edit_message(embed=view.embed(), view=view)
+
+
+class StartDifficultySelect(discord.ui.Select):
+    def __init__(self):
+        options = [
+            discord.SelectOption(label=format_category_name(difficulty), value=difficulty)
+            for difficulty in QUESTION_DIFFICULTIES
+        ]
+        super().__init__(placeholder="Difficulty", options=options, row=1)
+
+    async def callback(self, interaction: discord.Interaction):
+        view: StartWizardView = self.view
+        view.difficulty = self.values[0]
+        await interaction.response.edit_message(embed=view.embed(), view=view)
+
+
+class StartModeSelect(discord.ui.Select):
+    def __init__(self):
+        options = [
+            discord.SelectOption(label=format_category_name(mode), value=mode)
+            for mode in GAME_MODES
+        ]
+        super().__init__(placeholder="Game type", options=options, row=2)
+
+    async def callback(self, interaction: discord.Interaction):
+        view: StartWizardView = self.view
+        view.mode = self.values[0]
+        await interaction.response.edit_message(embed=view.embed(), view=view)
+
+
+class StartWizardButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label="Start Board", style=discord.ButtonStyle.success, row=3)
+
+    async def callback(self, interaction: discord.Interaction):
+        view: StartWizardView = self.view
+
+        if view.channel_id in active_games:
+            await interaction.response.send_message("A round is already active in this channel.", ephemeral=True)
+            return
+
+        await interaction.response.defer(ephemeral=True)
+        started = await start_new_round_in_channel(
+            interaction.channel,
+            category=view.category,
+            mode=view.mode,
+            difficulty=view.difficulty
+        )
+        await interaction.followup.send("The board is live." if started else "No board was started.", ephemeral=True)
+
+
+def create_admin_overview_embed(interaction: discord.Interaction) -> discord.Embed:
+    guild_id = interaction.guild.id
+    guild_data = get_guild_engagement(guild_id)
+    settings = get_server_settings(guild_id)
+    game = active_games.get(interaction.channel_id)
+    ratings = guild_data["question_ratings"]
+    weak_count = sum(
+        1
+        for item in ratings.values()
+        if len(item.get("bad", [])) > len(item.get("good", []))
+    )
+
+    if game:
+        round_status = (
+            f"`{format_category_name(game.question.category)}` | "
+            f"`{format_category_name(game.mode)}` | "
+            f"Red `{game.team_scores.get('red', 0)}` - Blue `{game.team_scores.get('blue', 0)}`"
+        )
+    else:
+        round_status = "No active round in this channel."
+
+    embed = discord.Embed(
+        title="Host Admin Menu",
+        description="Compact controls for running a smoother game night.",
+        color=discord.Color.dark_teal()
+    )
+    embed.add_field(name="Current Round", value=round_status, inline=False)
+    embed.add_field(
+        name="Review Queue",
+        value=(
+            f"Question suggestions: `{len(guild_data['suggestions'])}`\n"
+            f"Alias suggestions: `{len(guild_data['alias_suggestions'])}`\n"
+            f"Weak rated boards: `{weak_count}`"
+        ),
+        inline=True
+    )
+    embed.add_field(
+        name="Server Controls",
+        value=(
+            f"Host chat: `{'on' if settings['idle_host_enabled'] else 'off'}`\n"
+            f"Quiet mode: `{'on' if settings['quiet_mode'] else 'off'}`\n"
+            f"Steal mode: `{settings['steal_mode']}`"
+        ),
+        inline=True
+    )
+    embed.add_field(
+        name="Game Night",
+        value=(
+            f"Custom questions: `{len(CUSTOM_QUESTIONS.get(str(guild_id), []))}`\n"
+            f"Wrong-guess highlights: `{len(guild_data['bad_answers'])}`\n"
+            f"Blacklisted words: `{len(settings['blacklisted_words'])}`"
+        ),
+        inline=True
+    )
+    return embed
+
+
+def create_admin_stats_embed(guild_id: int) -> discord.Embed:
+    guild_data = get_guild_engagement(guild_id)
+    analytics = ENGAGEMENT_STATE.setdefault("question_analytics", {}).get(str(guild_id), {})
+    scores = SERVER_SCORES.get(str(guild_id), {})
+    ratings = guild_data["question_ratings"]
+    played_questions = len(analytics)
+    total_uses = sum(item.get("times_used", 0) for item in analytics.values())
+    total_good = sum(len(item.get("good", [])) for item in ratings.values())
+    total_bad = sum(len(item.get("bad", [])) for item in ratings.values())
+    top_players = sorted(
+        scores.values(),
+        key=lambda item: item.get("weekly_points", 0),
+        reverse=True
+    )[:5]
+
+    embed = discord.Embed(
+        title="Game Night Stats",
+        color=discord.Color.green()
+    )
+    embed.add_field(
+        name="Rounds",
+        value=(
+            f"Questions used: `{played_questions}`\n"
+            f"Total plays tracked: `{total_uses}`\n"
+            f"Recent memory: `{len(get_recent_question_ids(guild_id))}/{USED_QUESTIONS_LIMIT}`"
+        ),
+        inline=False
+    )
+    embed.add_field(
+        name="Quality",
+        value=(
+            f"Good ratings: `{total_good}`\n"
+            f"Needs-work ratings: `{total_bad}`\n"
+            f"Pending aliases: `{len(guild_data['alias_suggestions'])}`"
+        ),
+        inline=True
+    )
+    embed.add_field(
+        name="Content",
+        value=(
+            f"Base pool: `{len(QUESTIONS)}`\n"
+            f"Server custom: `{len(CUSTOM_QUESTIONS.get(str(guild_id), []))}`\n"
+            f"Pending suggestions: `{len(guild_data['suggestions'])}`"
+        ),
+        inline=True
+    )
+
+    if top_players:
+        lines = [
+            f"**{index}.** {item.get('name', 'Someone')} — `{item.get('weekly_points', 0)}` weekly pts"
+            for index, item in enumerate(top_players, start=1)
+        ]
+        embed.add_field(name="Weekly Leaders", value="\n".join(lines), inline=False)
+
+    return embed
+
+
+def create_suggestion_review_embed(guild_id: int) -> discord.Embed:
+    suggestions = get_guild_engagement(guild_id)["suggestions"]
+    embed = discord.Embed(
+        title="Suggested Questions",
+        color=discord.Color.blurple()
+    )
+
+    if not suggestions:
+        embed.description = "No suggested questions are waiting."
+        return embed
+
+    lines = []
+    for index, item in enumerate(suggestions[:5], start=1):
+        lines.append(
+            f"**{index}.** `{format_category_name(item['category'])}` {item['question'][:90]}\n"
+            f"Answers: {', '.join(item['answers'][:6])}"
+        )
+
+    embed.description = "\n\n".join(lines)
+    embed.set_footer(text="Approve First adds the oldest pending suggestion to this server's custom pool.")
+    return embed
+
+
+def approve_first_suggestion(guild_id: int) -> Optional[FeudQuestion]:
+    guild_data = get_guild_engagement(guild_id)
+    suggestions = guild_data["suggestions"]
+
+    if not suggestions:
+        return None
+
+    suggestion = suggestions.pop(0)
+    default_points = [40, 25, 15, 10, 6, 4, 3, 2]
+    answers = [
+        FeudAnswer(text=answer, points=default_points[position])
+        for position, answer in enumerate(suggestion["answers"][:8])
+    ]
+    custom_question = FeudQuestion(
+        category=suggestion["category"],
+        question=suggestion["question"],
+        answers=answers,
+        pack=f"server_{guild_id}"
+    )
+
+    CUSTOM_QUESTIONS.setdefault(str(guild_id), []).append(custom_question)
+    save_custom_questions(CUSTOM_QUESTIONS)
+    save_engagement_state(ENGAGEMENT_STATE)
+    return custom_question
+
+
+class BlacklistWordsModal(discord.ui.Modal, title="Update Blacklist"):
+    words = discord.ui.TextInput(
+        label="Words",
+        placeholder="Comma-separated words to add or remove",
+        style=discord.TextStyle.paragraph,
+        max_length=500
+    )
+    action = discord.ui.TextInput(
+        label="Action",
+        placeholder="add or remove",
+        default="add",
+        max_length=20
+    )
+
+    def __init__(self, guild_id: int):
+        super().__init__()
+        self.guild_id = guild_id
+
+    async def on_submit(self, interaction: discord.Interaction):
+        settings = get_server_settings(self.guild_id)
+        action = normalize_text(self.action.value)
+        words = [
+            normalize_text(word)
+            for chunk in self.words.value.splitlines()
+            for word in chunk.split(",")
+            if normalize_text(word)
+        ]
+
+        if not words:
+            await interaction.response.send_message("No valid words were provided.", ephemeral=True)
+            return
+
+        current_words = list(settings["blacklisted_words"])
+
+        if action.startswith("remove"):
+            current_words = [word for word in current_words if word not in words]
+            verb = "removed from"
+        else:
+            for word in words:
+                if word not in current_words:
+                    current_words.append(word)
+            verb = "added to"
+
+        update_server_setting(self.guild_id, "blacklisted_words", current_words)
+        await interaction.response.send_message(
+            f"`{len(words)}` word(s) {verb} the guess blacklist.",
+            ephemeral=True
+        )
+
+
+class SuggestionAdminView(discord.ui.View):
+    def __init__(self, guild_id: int):
+        super().__init__(timeout=900)
+        self.guild_id = guild_id
+
+    @discord.ui.button(label="Approve First", style=discord.ButtonStyle.success)
+    async def approve_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await interaction_has_host_permission(interaction):
+            await interaction.response.send_message("Suggestion review needs Manage Messages.", ephemeral=True)
+            return
+
+        approved = approve_first_suggestion(self.guild_id)
+
+        if not approved:
+            await interaction.response.send_message("No suggested questions are waiting.", ephemeral=True)
+            return
+
+        if interaction.message:
+            await interaction.message.edit(embed=create_suggestion_review_embed(self.guild_id), view=self)
+
+        await interaction.response.send_message(
+            f"Approved `{format_category_name(approved.category)}` question: **{approved.question}**",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Dismiss First", style=discord.ButtonStyle.danger)
+    async def dismiss_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await interaction_has_host_permission(interaction):
+            await interaction.response.send_message("Suggestion review needs Manage Messages.", ephemeral=True)
+            return
+
+        suggestions = get_guild_engagement(self.guild_id)["suggestions"]
+
+        if not suggestions:
+            await interaction.response.send_message("No suggested questions are waiting.", ephemeral=True)
+            return
+
+        removed = suggestions.pop(0)
+        save_engagement_state(ENGAGEMENT_STATE)
+
+        if interaction.message:
+            await interaction.message.edit(embed=create_suggestion_review_embed(self.guild_id), view=self)
+
+        await interaction.response.send_message(
+            f"Dismissed suggestion: **{removed['question']}**",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Refresh", style=discord.ButtonStyle.secondary)
+    async def refresh_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await interaction_has_host_permission(interaction):
+            await interaction.response.send_message("Suggestion review needs Manage Messages.", ephemeral=True)
+            return
+
+        await interaction.response.edit_message(embed=create_suggestion_review_embed(self.guild_id), view=self)
+
+
+class AdminMenuView(discord.ui.View):
+    def __init__(self, channel_id: int, guild_id: int):
+        super().__init__(timeout=900)
+        self.channel_id = channel_id
+        self.guild_id = guild_id
+
+    async def ensure_host(self, interaction: discord.Interaction) -> bool:
+        if await interaction_has_host_permission(interaction):
+            return True
+
+        await interaction.response.send_message("Admin controls need Manage Messages.", ephemeral=True)
+        return False
+
+    @discord.ui.button(label="Round Controls", style=discord.ButtonStyle.primary, row=0)
+    async def round_controls_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        if self.channel_id not in active_games:
+            await interaction.response.send_message("No active round in this channel.", ephemeral=True)
+            return
+
+        await interaction.response.send_message("Round controls are ready.", view=FeudAdminView(self.channel_id), ephemeral=True)
+
+    @discord.ui.button(label="End Round", style=discord.ButtonStyle.danger, row=0)
+    async def end_round_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        game = active_games.get(self.channel_id)
+
+        if not game:
+            await interaction.response.send_message("No active round in this channel.", ephemeral=True)
+            return
+
+        final_embed = create_final_embed(game, "Host ended the round from the admin menu.")
+        end_active_game(self.channel_id, game)
+        await interaction.response.send_message(embed=final_embed)
+        await post_round_feedback(interaction.channel, game)
+
+    @discord.ui.button(label="Open Lobby", style=discord.ButtonStyle.success, row=0)
+    async def lobby_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        if self.channel_id in active_games:
+            await interaction.response.send_message("A round is already active in this channel.", ephemeral=True)
+            return
+
+        view = LobbyView(self.channel_id)
+        active_lobbies[self.channel_id] = {"view": view}
+        await interaction.response.send_message(embed=view.lobby_embed(), view=view)
+        await maybe_send_host_line(interaction.channel, self.guild_id, LOBBY_HOST_LINES, force=True, cooldown_seconds=12)
+
+    @discord.ui.button(label="Category Vote", style=discord.ButtonStyle.secondary, row=0)
+    async def category_vote_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        view = CategoryVoteView(self.channel_id)
+        embed = discord.Embed(title="Vote for the Next Category", description=view.summary(), color=discord.Color.blurple())
+        await interaction.response.send_message(embed=embed, view=view)
+
+    @discord.ui.button(label="Daily Survey", style=discord.ButtonStyle.secondary, row=1)
+    async def daily_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        embed = make_daily_survey_embed(self.guild_id)
+        get_guild_engagement(self.guild_id)["daily_surveys"][today_key()]["posted"] = True
+        save_engagement_state(ENGAGEMENT_STATE)
+        await interaction.response.send_message(embed=embed)
+
+    @discord.ui.button(label="Stats", style=discord.ButtonStyle.secondary, row=1)
+    async def stats_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        await interaction.response.send_message(embed=create_admin_stats_embed(self.guild_id), ephemeral=True)
+
+    @discord.ui.button(label="Question Review", style=discord.ButtonStyle.secondary, row=1)
+    async def quality_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        await interaction.response.send_message(
+            embed=create_quality_review_embed(self.guild_id),
+            view=QualityReviewView(self.guild_id),
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Suggestions", style=discord.ButtonStyle.secondary, row=1)
+    async def suggestions_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        await interaction.response.send_message(
+            embed=create_suggestion_review_embed(self.guild_id),
+            view=SuggestionAdminView(self.guild_id),
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Blacklist", style=discord.ButtonStyle.secondary, row=2)
+    async def blacklist_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        await interaction.response.send_modal(BlacklistWordsModal(self.guild_id))
+
+    @discord.ui.button(label="Host Chat", style=discord.ButtonStyle.secondary, row=2)
+    async def host_chat_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        current = get_server_settings(self.guild_id)["idle_host_enabled"]
+        settings = update_server_setting(self.guild_id, "idle_host_enabled", not current)
+        await interaction.response.edit_message(embed=create_admin_overview_embed(interaction), view=self)
+        await interaction.followup.send(
+            f"Host chat is now **{'on' if settings['idle_host_enabled'] else 'off'}**.",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Quiet Mode", style=discord.ButtonStyle.secondary, row=2)
+    async def quiet_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        current = get_server_settings(self.guild_id)["quiet_mode"]
+        settings = update_server_setting(self.guild_id, "quiet_mode", not current)
+        await interaction.response.edit_message(embed=create_admin_overview_embed(interaction), view=self)
+        await interaction.followup.send(
+            f"Quiet mode is now **{'on' if settings['quiet_mode'] else 'off'}**.",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Steal Mode", style=discord.ButtonStyle.secondary, row=2)
+    async def steal_mode_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        current = get_server_settings(self.guild_id)["steal_mode"]
+        next_mode = "captain" if current == "any" else "any"
+        update_server_setting(self.guild_id, "steal_mode", next_mode)
+        await interaction.response.edit_message(embed=create_admin_overview_embed(interaction), view=self)
+        await interaction.followup.send(f"Steal mode is now `{next_mode}`.", ephemeral=True)
+
+    @discord.ui.button(label="Refresh", style=discord.ButtonStyle.secondary, row=3)
+    async def refresh_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.ensure_host(interaction):
+            return
+
+        await interaction.response.edit_message(embed=create_admin_overview_embed(interaction), view=self)
+
 # ----------------------------
 # BOT EVENTS
 # ----------------------------
@@ -3032,6 +4468,7 @@ async def on_ready():
     global engagement_background_task
 
     print(f"Logged in as {bot.user}.")
+    apply_approved_aliases_to_questions()
     load_active_games()
 
     try:
@@ -3127,6 +4564,17 @@ async def on_message(message: discord.Message):
         return
 
     game = active_games[channel_id]
+
+    if message_mentions_host_name(message.content):
+        settings = get_server_settings(game.guild_id)
+        now = time.time()
+        last_direct = last_direct_host_comment.get(channel_id, 0)
+
+        if not settings["quiet_mode"] and settings["idle_host_enabled"] and now - last_direct >= DIRECT_HOST_COOLDOWN_SECONDS:
+            last_direct_host_comment[channel_id] = now
+            await message.channel.send(get_direct_host_response(message.content))
+
+        return
 
     user_id = message.author.id
     display_name = message.author.display_name
@@ -3356,6 +4804,7 @@ async def on_message(message: discord.Message):
                 f"{achievement_text}"
             )
         await message.channel.send(response_text)
+        await maybe_send_round_comment(message.channel, game, "correct")
 
         await update_board_message(message.channel, game)
 
@@ -3370,6 +4819,7 @@ async def on_message(message: discord.Message):
             )
             await message.channel.send(embed=final_embed)
             end_active_game(channel_id, game)
+            await post_round_feedback(message.channel, game)
             await post_next_round_vote(message.channel, category=game.question.category)
 
         return
@@ -3379,6 +4829,7 @@ async def on_message(message: discord.Message):
     team = game.player_teams.get(user_id)
     team_strikes = add_team_strike(game, team)
     game.wrong_guesses.append(message.content.strip())
+    record_bad_answer(game.guild_id, game.question, message.content.strip(), display_name)
 
     achievement_messages = []
 
@@ -3421,6 +4872,10 @@ async def on_message(message: discord.Message):
         f"💥 **{display_name}'s streak has been reset.**"
         f"{achievement_text}"
     )
+    if team_strikes == game_max_strikes(game) - 1:
+        await maybe_send_round_comment(message.channel, game, "pressure", force=True)
+    else:
+        await maybe_send_round_comment(message.channel, game, "wrong")
     await update_board_message(message.channel, game)
 
     save_active_games()
@@ -3442,6 +4897,7 @@ async def on_message(message: discord.Message):
             )
             await message.channel.send(embed=final_embed)
             end_active_game(channel_id, game)
+            await post_round_feedback(message.channel, game)
             await post_next_round_vote(message.channel, category=game.question.category)
             return
 
@@ -3449,6 +4905,7 @@ async def on_message(message: discord.Message):
         game.stealing_team = stealing_team
         save_active_games()
 
+        await update_board_message(message.channel, game, force_new=True)
         steal_embed = create_steal_embed(game)
 
         team_text = "🔴 Red Team" if stealing_team == "red" else "🔵 Blue Team"
@@ -3458,6 +4915,7 @@ async def on_message(message: discord.Message):
             f"{team_text} gets one chance to **steal the board**!"
         )
 
+        await maybe_send_round_comment(message.channel, game, "steal", force=True)
         await message.channel.send(embed=steal_embed)
 
 
@@ -3735,6 +5193,7 @@ async def handle_steal_guess(message: discord.Message, game: ChannelGame):
         if channel_id in active_games:
             end_active_game(channel_id, game)
 
+        await post_round_feedback(message.channel, game)
         await post_next_round_vote(message.channel, category=game.question.category)
         return
 
@@ -3743,6 +5202,7 @@ async def handle_steal_guess(message: discord.Message, game: ChannelGame):
     # ----------------------------
     update_question_analytics(game.guild_id, game.question, "wrong_guesses")
     game.wrong_guesses.append(message.content.strip())
+    record_bad_answer(game.guild_id, game.question, message.content.strip(), display_name)
     game.round_correct_streaks[user_id] = 0
 
     achievement_messages = []
@@ -3793,11 +5253,73 @@ async def handle_steal_guess(message: discord.Message, game: ChannelGame):
     if channel_id in active_games:
         end_active_game(channel_id, game)
 
+    await post_round_feedback(message.channel, game)
     await post_next_round_vote(message.channel, category=game.question.category)
 
 # ----------------------------
 # SLASH COMMANDS
 # ----------------------------
+
+
+@bot.tree.command(name="feud_menu", description="Open the Family Fortunes button menu.")
+async def feud_menu(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        embed=menu_embed(),
+        view=FeudMenuView(interaction.channel_id)
+    )
+
+
+@bot.tree.command(name="feud_admin_menu", description="Open the compact host/admin control menu.")
+@app_commands.checks.has_permissions(manage_messages=True)
+async def feud_admin_menu(interaction: discord.Interaction):
+    if not interaction.guild:
+        await interaction.response.send_message("Admin controls only work inside a server.", ephemeral=True)
+        return
+
+    await interaction.response.send_message(
+        embed=create_admin_overview_embed(interaction),
+        view=AdminMenuView(interaction.channel_id, interaction.guild.id),
+        ephemeral=True
+    )
+
+
+@feud_admin_menu.error
+async def feud_admin_menu_error(interaction: discord.Interaction, error):
+    await interaction.response.send_message(
+        "You need the **Manage Messages** permission to use the admin menu.",
+        ephemeral=True
+    )
+
+
+@bot.tree.command(name="feud_review", description="Open question ratings and alias review controls.")
+@app_commands.checks.has_permissions(manage_messages=True)
+async def feud_review(interaction: discord.Interaction):
+    if not interaction.guild:
+        await interaction.response.send_message("Review only works inside a server.", ephemeral=True)
+        return
+
+    await interaction.response.send_message(
+        embed=create_quality_review_embed(interaction.guild.id),
+        view=QualityReviewView(interaction.guild.id),
+        ephemeral=True
+    )
+
+
+@feud_review.error
+async def feud_review_error(interaction: discord.Interaction, error):
+    await interaction.response.send_message(
+        "You need the **Manage Messages** permission to review question quality.",
+        ephemeral=True
+    )
+
+
+@bot.tree.command(name="feud_bad_answers", description="Show recent funny wrong guesses.")
+async def feud_bad_answers(interaction: discord.Interaction):
+    if not interaction.guild:
+        await interaction.response.send_message("Wrong-guess highlights only work inside a server.", ephemeral=True)
+        return
+
+    await interaction.response.send_message(embed=create_bad_answers_embed(interaction.guild.id))
 
 
 @bot.tree.command(name="feud_badges", description="Show who has the most Family Fortunes achievements.")
@@ -3983,6 +5505,13 @@ async def feud_lobby(interaction: discord.Interaction, mode: str = "classic"):
     view = LobbyView(interaction.channel_id, mode=mode)
     active_lobbies[interaction.channel_id] = {"view": view}
     await interaction.response.send_message(embed=view.lobby_embed(), view=view)
+    await maybe_send_host_line(
+        interaction.channel,
+        interaction.guild.id if interaction.guild else None,
+        LOBBY_HOST_LINES,
+        force=True,
+        cooldown_seconds=12
+    )
 
 
 @bot.tree.command(name="feud_category_vote", description="Start a quick vote for the next round category.")
@@ -4735,6 +6264,7 @@ async def feud_join(interaction: discord.Interaction, team: app_commands.Choice[
 
     await update_board_message(interaction.channel, game)
     save_active_games()
+    await maybe_send_host_line(interaction.channel, game.guild_id, TEAM_JOIN_HOST_LINES)
 
 @bot.tree.command(name="feud_leave", description="Leave the current Family Fortunes round.")
 async def feud_leave(interaction: discord.Interaction):
@@ -5048,6 +6578,7 @@ async def feud_stop(interaction: discord.Interaction):
     end_active_game(channel_id, game)
 
     await interaction.response.send_message(embed=final_embed)
+    await post_round_feedback(interaction.channel, game)
 
 
 @feud_stop.error
