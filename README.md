@@ -2,6 +2,34 @@
 
 A Discord Family Fortunes game bot with team play, host controls, question packs, custom server questions, per-server settings, daily and weekly leaderboards, timers, persistent in-progress rounds, rendered game boards, Fast Money, lobbies, daily surveys, weekly challenges, rivalries, and question-quality tools.
 
+Current version: `1.2.0`
+
+## V1.2 Diagnostics & Operator Tools
+
+V1.2 adds a local pre-flight healthcheck so you can verify the project before starting the bot or running a Discord game night.
+
+Added:
+
+- `tools/healthcheck.py` local diagnostics tool.
+- `tools/README.md` tool usage notes.
+- `docs/V1.2_DIAGNOSTICS_NOTES.md` release notes.
+- `VERSION` bumped to `1.2.0`.
+- Expanded `.env.example` runtime notes.
+
+The healthcheck verifies source files, `.env` setup, Python compilation, question JSON quality, runtime JSON validity, SQLite readability, board template availability, and detected slash commands.
+
+Run it from the project root:
+
+```powershell
+.\.venv\Scripts\python.exe tools\healthcheck.py
+```
+
+Or:
+
+```bash
+python tools/healthcheck.py
+```
+
 ## V1.1 Stability & Repo Hygiene
 
 V1.1 focuses on making the project safer to clone, run, and maintain:
@@ -59,7 +87,13 @@ strikes, answers, and points drawn onto the template.
 
    Guesses are read from normal channel messages, so the bot needs this intent enabled.
 
-5. Run the bot:
+5. Run the healthcheck:
+
+   ```powershell
+   .\.venv\Scripts\python.exe tools\healthcheck.py
+   ```
+
+6. Run the bot:
 
    ```powershell
    .\.venv\Scripts\python.exe main.py
@@ -116,10 +150,10 @@ Then open `http://127.0.0.1:8765`.
 
 ## Recommended Next Steps
 
-Suggested follow-up upgrades after V1.1:
+Suggested follow-up upgrades after V1.2:
 
 1. Split the large `main.py` into modules for commands, storage, rendering, views, scoring, and question loading.
 2. Move from JSON-first persistence to SQLite-first persistence.
-3. Add a dedicated `/feud_health` command once the codebase is modularised.
+3. Add an in-Discord `/feud_health` command once the diagnostics logic is moved into an import-safe module.
 4. Add board themes such as classic, neon arcade, pub quiz, mafia noir, Dude bowling, and Christmas.
 5. Build a guided Game Night mode with lobby, category vote, normal rounds, double/triple points, Fast Money, and a winner ceremony.
