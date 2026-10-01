@@ -1,0 +1,41 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Runtime bot state
+active_games.json
+engagement_state.json
+server_scores.json
+custom_questions.json
+server_settings.json
+fortune_bot.sqlite3
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+
+# Generated images / temporary output
+rendered_boards/
+*.tmp
+
+# Logs
+logs/
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
