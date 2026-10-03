@@ -2,33 +2,48 @@
 
 A Discord Family Fortunes game bot with team play, host controls, question packs, custom server questions, per-server settings, daily and weekly leaderboards, timers, persistent in-progress rounds, rendered game boards, Fast Money, lobbies, daily surveys, weekly challenges, rivalries, and question-quality tools.
 
-Current version: `1.2.0`
+## Current Version
 
-## V1.2 Diagnostics & Operator Tools
+`1.3.0`
 
-V1.2 adds a local pre-flight healthcheck so you can verify the project before starting the bot or running a Discord game night.
+## V1.3 Modularisation & Health Command
 
-Added:
+V1.3 starts the proper modularisation path by adding a `feudbot/` package:
 
-- `tools/healthcheck.py` local diagnostics tool.
-- `tools/README.md` tool usage notes.
-- `docs/V1.2_DIAGNOSTICS_NOTES.md` release notes.
-- `VERSION` bumped to `1.2.0`.
-- Expanded `.env.example` runtime notes.
+- `feudbot/version.py` keeps version metadata out of the main bot file.
+- `feudbot/diagnostics.py` contains reusable health and diagnostics helpers.
+- `feudbot/health_command.py` contains the Discord `/feud_health` command registration.
+- `tools/apply_v1_3_modularisation.py` safely patches the large existing `main.py` to wire in the new command.
 
-The healthcheck verifies source files, `.env` setup, Python compilation, question JSON quality, runtime JSON validity, SQLite readability, board template availability, and detected slash commands.
+Because the existing bot still lives in a very large single `main.py`, V1.3 uses a safe patcher rather than a risky full-file rewrite. Run this once after pulling V1.3:
 
-Run it from the project root:
+```powershell
+.\.venv\Scripts\python.exe tools\apply_v1_3_modularisation.py
+```
+
+Then run the local healthcheck:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\healthcheck.py
 ```
 
-Or:
+After restarting the bot, Discord will sync the new command:
 
-```bash
-python tools/healthcheck.py
+```text
+/feud_health
 ```
+
+It reports version, uptime, Discord latency, server count, active rounds, question pool size, custom questions, SQLite status, and board-template status.
+
+## V1.2 Diagnostics & Operator Tools
+
+V1.2 added a local healthcheck for checking setup before starting the bot:
+
+```powershell
+.\.venv\Scripts\python.exe tools\healthcheck.py
+```
+
+It checks required files, `.env`, `main.py` syntax, question JSON structure, runtime JSON, SQLite readability, board template presence, and detected slash commands.
 
 ## V1.1 Stability & Repo Hygiene
 
@@ -87,7 +102,7 @@ strikes, answers, and points drawn onto the template.
 
    Guesses are read from normal channel messages, so the bot needs this intent enabled.
 
-5. Run the healthcheck:
+5. Optional but recommended: run the healthcheck:
 
    ```powershell
    .\.venv\Scripts\python.exe tools\healthcheck.py
@@ -115,6 +130,7 @@ Runtime state is still written to JSON files for readability and mirrored into `
 
 ## Useful Commands
 
+- `/feud_health` shows bot version, uptime, latency, content counts, active rounds, SQLite status, and board asset status.
 - `/feud_menu` opens the main button menu.
 - `/feud_start` starts a round with category packs and game modes.
 - `/feud_lobby` opens a pre-game lobby with team joins and category voting.
@@ -150,10 +166,12 @@ Then open `http://127.0.0.1:8765`.
 
 ## Recommended Next Steps
 
-Suggested follow-up upgrades after V1.2:
+Suggested follow-up upgrades after V1.3:
 
-1. Split the large `main.py` into modules for commands, storage, rendering, views, scoring, and question loading.
-2. Move from JSON-first persistence to SQLite-first persistence.
-3. Add an in-Discord `/feud_health` command once the diagnostics logic is moved into an import-safe module.
-4. Add board themes such as classic, neon arcade, pub quiz, mafia noir, Dude bowling, and Christmas.
-5. Build a guided Game Night mode with lobby, category vote, normal rounds, double/triple points, Fast Money, and a winner ceremony.
+1. Split storage helpers into `feudbot/storage.py`.
+2. Move dataclasses into `feudbot/models.py`.
+3. Move question loading/matching into `feudbot/questions.py`.
+4. Move board rendering into `feudbot/rendering.py`.
+5. Move Discord views and commands into `feudbot/views/` and `feudbot/commands/`.
+6. Add board themes such as classic, neon arcade, pub quiz, mafia noir, Dude bowling, and Christmas.
+7. Build a guided Game Night mode with lobby, category vote, normal rounds, double/triple points, Fast Money, and a winner ceremony.
