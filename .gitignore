@@ -28,6 +28,7 @@ fortune_bot.sqlite3
 
 # Generated images / temporary output
 rendered_boards/
+reports/
 *.tmp
 
 # Logs
