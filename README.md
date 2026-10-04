@@ -1,33 +1,61 @@
 # Family Feud Fortune Bot
 
-A Discord Family Fortunes game bot with team play, host controls, question packs, custom server questions, per-server settings, daily and weekly leaderboards, timers, persistent in-progress rounds, rendered game boards, Fast Money, lobbies, daily surveys, weekly challenges, rivalries, and question-quality tools.
+A Discord Family Fortunes / Family Feud style bot with team play, host controls, rendered game boards, question packs, custom server questions, leaderboards, Fast Money, lobbies, daily surveys, weekly challenges, rivalries, and question-quality tools.
 
 ## Current Version
 
-`1.3.0`
+`1.4.0`
+
+## V1.4 Board Polish & Question QA
+
+V1.4 adds a practical board fix and a proper question-pack review workflow.
+
+### Board strike alignment
+
+The rendered board previously drew strike crosses using a font-rendered `X`. Font metrics can shift between machines, which is why the crosses could drift inside the strike boxes.
+
+Run this once after pulling V1.4:
+
+```powershell
+.\.venv\Scripts\python.exe tools\apply_v1_4_board_polish.py
+```
+
+The patcher replaces the strike drawing block in `main.py` with centred diagonal line geometry.
+
+### Question audit
+
+Run this to scan the built-in question packs and optional custom question file:
+
+```powershell
+.\.venv\Scripts\python.exe tools\question_audit.py
+```
+
+It writes:
+
+- `reports/question_audit_report.md`
+- `reports/question_audit_findings.csv`
+- `reports/question_web_check_candidates.csv`
+
+The audit checks JSON structure, duplicate questions/answers, point ordering, suspicious/vague answers, category names, and fact/current-sensitive wording that needs manual or web checking.
+
+> Family Feud / Family Fortunes answers are survey-style answers, not normal quiz facts. The internet can help with factual/current prompts, but most boards should be judged for plausibility, fun, short answer wording, fair scoring, and play feedback.
 
 ## V1.3 Modularisation & Health Command
 
-V1.3 starts the proper modularisation path by adding a `feudbot/` package:
+V1.3 started the modularisation path by adding a `feudbot/` package:
 
 - `feudbot/version.py` keeps version metadata out of the main bot file.
 - `feudbot/diagnostics.py` contains reusable health and diagnostics helpers.
 - `feudbot/health_command.py` contains the Discord `/feud_health` command registration.
 - `tools/apply_v1_3_modularisation.py` safely patches the large existing `main.py` to wire in the new command.
 
-Because the existing bot still lives in a very large single `main.py`, V1.3 uses a safe patcher rather than a risky full-file rewrite. Run this once after pulling V1.3:
+Run this once after pulling V1.3 or newer if your local `main.py` has not been patched yet:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\apply_v1_3_modularisation.py
 ```
 
-Then run the local healthcheck:
-
-```powershell
-.\.venv\Scripts\python.exe tools\healthcheck.py
-```
-
-After restarting the bot, Discord will sync the new command:
+After restarting the bot, Discord will sync:
 
 ```text
 /feud_health
@@ -47,20 +75,17 @@ It checks required files, `.env`, `main.py` syntax, question JSON structure, run
 
 ## V1.1 Stability & Repo Hygiene
 
-V1.1 focuses on making the project safer to clone, run, and maintain:
+V1.1 cleaned up the repo and added safer defaults:
 
-- Added `.gitignore` rules for secrets, virtual environments, Python caches, runtime JSON state, SQLite databases, generated board images, and logs.
-- Added `.env.example` so setup is clearer without exposing a real Discord token.
-- Documented which files are source files and which files are runtime state.
-- Cleaned the intended repository shape so future upgrades can be made without committing local bot data.
-
-> Existing installs can keep their local runtime files. New commits should avoid adding `.env`, `fortune_bot.sqlite3`, `active_games.json`, `server_scores.json`, `engagement_state.json`, `custom_questions.json`, `server_settings.json`, `rendered_boards/`, or `__pycache__/`.
+- `.gitignore` for secrets, virtual environments, caches, runtime state, SQLite files, generated boards, and logs.
+- `.env.example` for safer setup.
+- Runtime files removed from the public source repo.
 
 ## Features
 
 - Team-based Family Fortunes / Feud-style rounds.
 - Red vs Blue team play with strikes, steals, captain mode, and host controls.
-- Multiple game modes including classic, Fast Money, Sudden Death, Teams Only, and Chaos.
+- Multiple game modes including Classic, Fast Money, Sudden Death, Teams Only, and Chaos.
 - Question packs, categories, difficulty filtering, and autocomplete.
 - Custom server questions and moderator-managed suggestions.
 - Player profiles, achievements, daily/weekly/lifetime leaderboards, and rivalry stats.
@@ -73,10 +98,6 @@ The bundled question pool contains 2,000 questions across 60 categories:
 - `questions.json`: original base pack
 - `extra_questions.json`: hand-curated fresh pack
 - `mega_questions.json`: large expansion pack
-
-The bot also supports a rendered PNG game board using `assets/game_board_template.png`.
-If that file exists, round boards are posted as a full game-show image with scores,
-strikes, answers, and points drawn onto the template.
 
 ## Setup
 
@@ -100,12 +121,13 @@ strikes, answers, and points drawn onto the template.
 
 4. Enable **Message Content Intent** in the Discord Developer Portal.
 
-   Guesses are read from normal channel messages, so the bot needs this intent enabled.
-
-5. Optional but recommended: run the healthcheck:
+5. Run the patchers/checks after pulling the latest version:
 
    ```powershell
+   .\.venv\Scripts\python.exe tools\apply_v1_3_modularisation.py
+   .\.venv\Scripts\python.exe tools\apply_v1_4_board_polish.py
    .\.venv\Scripts\python.exe tools\healthcheck.py
+   .\.venv\Scripts\python.exe tools\question_audit.py
    ```
 
 6. Run the bot:
@@ -125,8 +147,7 @@ These files are created or updated while the bot runs and should stay local to t
 - `server_settings.json`
 - `fortune_bot.sqlite3`
 - `rendered_boards/`
-
-Runtime state is still written to JSON files for readability and mirrored into `fortune_bot.sqlite3` for safer long-term storage.
+- `reports/`
 
 ## Useful Commands
 
@@ -136,7 +157,7 @@ Runtime state is still written to JSON files for readability and mirrored into `
 - `/feud_lobby` opens a pre-game lobby with team joins and category voting.
 - `/feud_join` joins the current round on Red or Blue team.
 - `/feud_board` shows the current board.
-- `/feud_admin` opens host buttons for board, reveal, skip, clear strikes, reveal all, and stop.
+- `/feud_admin` opens host controls.
 - `/feud_admin_menu` opens the compact host/admin control menu.
 - `/feud_fast_money` starts a solo 5-question Fast Money challenge.
 - `/feud_add_question` adds custom questions for the current server.
@@ -144,8 +165,8 @@ Runtime state is still written to JSON files for readability and mirrored into `
 - `/feud_settings` adjusts cooldowns, strikes, timers, steal mode, and more.
 - `/feud_blacklist_word`, `/feud_unblacklist_word`, and `/feud_pause` provide moderation controls.
 - `/feud_leaderboard` supports lifetime, weekly, and daily boards.
-- `/feud_profile` shows a player's richer stat profile.
-- `/feud_validate_questions` checks built-in and custom question quality.
+- `/feud_profile` shows a player's stat profile.
+- `/feud_validate_questions` checks question data quality inside Discord.
 - `/feud_question_analytics` shows freshness and performance stats.
 - `/feud_daily_survey` posts the daily casual survey prompt.
 - `/feud_mini_poll` posts a quick between-round poll.
@@ -166,12 +187,10 @@ Then open `http://127.0.0.1:8765`.
 
 ## Recommended Next Steps
 
-Suggested follow-up upgrades after V1.3:
+Suggested follow-up upgrades after V1.4:
 
-1. Split storage helpers into `feudbot/storage.py`.
-2. Move dataclasses into `feudbot/models.py`.
-3. Move question loading/matching into `feudbot/questions.py`.
-4. Move board rendering into `feudbot/rendering.py`.
-5. Move Discord views and commands into `feudbot/views/` and `feudbot/commands/`.
-6. Add board themes such as classic, neon arcade, pub quiz, mafia noir, Dude bowling, and Christmas.
-7. Build a guided Game Night mode with lobby, category vote, normal rounds, double/triple points, Fast Money, and a winner ceremony.
+1. Use `reports/question_audit_findings.csv` to clean up flagged boards.
+2. Add a Discord `/feud_question_report` command using the same audit logic.
+3. Split board rendering into `feudbot/rendering.py`.
+4. Add board themes such as classic, neon arcade, pub quiz, mafia noir, Dude bowling, and Christmas.
+5. Build a guided Game Night mode with lobby, category vote, normal rounds, double/triple points, Fast Money, and a winner ceremony.
