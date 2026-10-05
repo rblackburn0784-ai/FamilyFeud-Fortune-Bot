@@ -29,12 +29,14 @@ SURVEY_OPENERS = (
     "give me ", "what is something", "what's something", "what are things", "what are some"
 )
 
+# These are intentionally phrases/whole words, not raw substrings. The first V1.4 audit used
+# simple substring checks, so "talking" matched "king" and "checking" matched "king".
 FACT_CUES = (
     "capital", "current", "latest", "today", "this year", "president", "prime minister",
     "king", "queen", "ceo", "official", "population", "largest", "smallest", "longest",
     "shortest", "oldest", "youngest", "when did", "what year", "which year", "how many",
     "how much", "winner", "champion", "record", "world record", "highest", "lowest",
-    "date", "born", "died", "founded", "released", "price", "cost", "law", "legal"
+    "born", "died", "founded", "released", "price", "cost", "law", "legal"
 )
 
 SUSPICIOUS_WORDS = (
@@ -46,6 +48,28 @@ def normalize(text: Any) -> str:
     text = str(text or "").lower().strip()
     text = re.sub(r"[^a-z0-9]+", " ", text)
     return " ".join(text.split())
+
+
+def normalize_category(text: Any) -> str:
+    """Normalise a category key without losing underscore-style category names."""
+    text = str(text or "").lower().strip()
+    text = re.sub(r"[^a-z0-9]+", "_", text)
+    return text.strip("_")
+
+
+def contains_fact_cue(question: str) -> bool:
+    qnorm = normalize(question)
+    for cue in FACT_CUES:
+        cue_norm = normalize(cue)
+        if re.search(rf"\b{re.escape(cue_norm)}\b", qnorm):
+            return True
+
+    # Keep date checks precise so a normal dating question is not treated as a fact question.
+    date_patterns = (
+        r"\bwhat date\b", r"\bwhich date\b", r"\bdate was\b", r"\bdate is\b",
+        r"\brelease date\b", r"\bfounded date\b"
+    )
+    return any(re.search(pattern, qnorm) for pattern in date_patterns)
 
 
 def load_json(path: Path) -> Any:
@@ -101,7 +125,7 @@ def audit_question(item: dict[str, Any], findings: list[Finding], seen_questions
         return
 
     question = str(item.get("question", "")).strip()
-    category = normalize(item.get("category", "general")) or "general"
+    category = normalize_category(item.get("category", "general")) or "general"
     answers = item.get("answers")
 
     if not question:
@@ -144,7 +168,7 @@ def audit_question(item: dict[str, Any], findings: list[Finding], seen_questions
             add(findings, "warning", item, "Long answer text", f"answer {answer_index}: {text}")
         if len(text.split()) > 7:
             add(findings, "info", item, "Verbose answer text", f"answer {answer_index}: {text}")
-        if any(word in normalize(text) for word in SUSPICIOUS_WORDS):
+        if any(re.search(rf"\b{re.escape(normalize(word))}\b", normalize(text)) for word in SUSPICIOUS_WORDS if normalize(word)):
             add(findings, "warning", item, "Suspicious vague answer", f"answer {answer_index}: {text}")
 
         try:
@@ -190,7 +214,7 @@ def audit_question(item: dict[str, Any], findings: list[Finding], seen_questions
     if not qnorm.startswith(SURVEY_OPENERS):
         add(findings, "info", item, "Question is not in classic survey phrasing", question)
 
-    if any(cue in qnorm for cue in FACT_CUES):
+    if contains_fact_cue(question):
         add(findings, "review", item, "Fact/current-sensitive wording needs human/web check", question)
 
 
