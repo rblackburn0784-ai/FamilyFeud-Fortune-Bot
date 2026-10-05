@@ -1,0 +1,23 @@
+{
+  "notes": "Board rendering coordinates for the 1680x945 game_board_template.png. Edit this file to nudge board UI without editing main.py.",
+  "strikes": {
+    "red_boxes": [[104, 431, 194, 521], [104, 533, 194, 623], [104, 635, 194, 725]],
+    "blue_boxes": [[1488, 431, 1578, 521], [1488, 533, 1578, 623], [1488, 635, 1578, 725]],
+    "line_width": 14,
+    "padding": 18,
+    "inactive_line_width": 10
+  },
+  "answers": {
+    "glow_enabled": true,
+    "answer_text_right": 1240,
+    "answer_text_top_offset": 12,
+    "hidden_text_top_offset": 20
+  },
+  "badge": {
+    "enabled": true,
+    "box": [650, 830, 1030, 875]
+  },
+  "scores": {
+    "outline_width": 3
+  }
+}
