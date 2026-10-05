@@ -4,23 +4,64 @@ A Discord Family Fortunes / Family Feud style bot with team play, host controls,
 
 ## Current Version
 
-`1.4.0`
+`1.4.2`
+
+## V1.4.2 Board UI Polish
+
+V1.4.2 moves the PNG board rendering into reusable modules and adds local preview tooling so visual issues can be checked without running Discord.
+
+Added:
+
+- `feudbot/board_config.py`
+- `feudbot/board_renderer.py`
+- `assets/board_layout.json`
+- `tools/apply_v1_4_2_board_ui_polish.py`
+- `tools/render_board_preview.py`
+- `docs/V1.4.2_BOARD_UI_POLISH.md`
+
+Board improvements:
+
+- Strike Xs are drawn as centred diagonal geometry rather than font-rendered text.
+- Strike co-ordinates now live in `assets/board_layout.json`.
+- Revealed answers can show a subtle glow.
+- Long answers shrink more safely to fit the row.
+- Red and Blue score boxes have team-colour outlines.
+- The board now has a small round-type badge.
+- Preview images can be generated locally for 0/1/2/3 strikes, partial reveal, completed board, and mode badges.
+
+Run this once after pulling V1.4.2:
+
+```powershell
+.\.venv\Scripts\python.exe tools\apply_v1_4_2_board_ui_polish.py
+```
+
+Then generate local preview boards:
+
+```powershell
+.\.venv\Scripts\python.exe tools\render_board_preview.py
+```
+
+Preview images are written to:
+
+```text
+rendered_boards/previews/
+```
+
+> The board badge can display labels such as Classic, Fast Money, Sudden Death, Double Points, Triple Points, and Chaos. Double/triple-points gameplay still needs a future gameplay-mode patch before those become live scoring modes.
+
+## V1.4.1 Question Audit False-Positive Fix
+
+V1.4.1 tightens the question-audit logic so it no longer treats valid underscore categories such as `big_lebowski`, `social_media`, or `random_weird` as unknown categories, and no longer matches fact-check terms inside unrelated words such as `talking` or `checking`.
 
 ## V1.4 Board Polish & Question QA
 
-V1.4 adds a practical board fix and a proper question-pack review workflow.
+V1.4 added a practical board fix and a proper question-pack review workflow.
 
 ### Board strike alignment
 
 The rendered board previously drew strike crosses using a font-rendered `X`. Font metrics can shift between machines, which is why the crosses could drift inside the strike boxes.
 
-Run this once after pulling V1.4:
-
-```powershell
-.\.venv\Scripts\python.exe tools\apply_v1_4_board_polish.py
-```
-
-The patcher replaces the strike drawing block in `main.py` with centred diagonal line geometry.
+V1.4.2 supersedes the original V1.4 board patcher with the reusable renderer and layout file above.
 
 ### Question audit
 
@@ -125,7 +166,8 @@ The bundled question pool contains 2,000 questions across 60 categories:
 
    ```powershell
    .\.venv\Scripts\python.exe tools\apply_v1_3_modularisation.py
-   .\.venv\Scripts\python.exe tools\apply_v1_4_board_polish.py
+   .\.venv\Scripts\python.exe tools\apply_v1_4_2_board_ui_polish.py
+   .\.venv\Scripts\python.exe tools\render_board_preview.py
    .\.venv\Scripts\python.exe tools\healthcheck.py
    .\.venv\Scripts\python.exe tools\question_audit.py
    ```
@@ -187,10 +229,10 @@ Then open `http://127.0.0.1:8765`.
 
 ## Recommended Next Steps
 
-Suggested follow-up upgrades after V1.4:
+Suggested follow-up upgrades after V1.4.2:
 
-1. Use `reports/question_audit_findings.csv` to clean up flagged boards.
-2. Add a Discord `/feud_question_report` command using the same audit logic.
-3. Split board rendering into `feudbot/rendering.py`.
-4. Add board themes such as classic, neon arcade, pub quiz, mafia noir, Dude bowling, and Christmas.
+1. Use `rendered_boards/previews/` to tune `assets/board_layout.json` against your actual template.
+2. Add board themes such as classic, neon arcade, pub quiz, mafia noir, Dude bowling, and Christmas.
+3. Add a Discord presentation upgrade with richer embeds, clearer steal-phase UI, and stronger top-answer/wrong-answer moments.
+4. Add a Discord `/feud_question_report` command using the same audit logic.
 5. Build a guided Game Night mode with lobby, category vote, normal rounds, double/triple points, Fast Money, and a winner ceremony.
