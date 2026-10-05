@@ -30,6 +30,7 @@ fortune_bot.sqlite3
 rendered_boards/
 reports/
 *.tmp
+*.bak
 
 # Logs
 logs/
