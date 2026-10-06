@@ -1,10 +1,90 @@
 # Family Feud Fortune Bot
 
-A Discord Family Fortunes / Family Feud style bot with team play, host controls, rendered game boards, question packs, custom server questions, leaderboards, Fast Money, lobbies, daily surveys, weekly challenges, rivalries, and question-quality tools.
+A Discord Family Fortunes / Family Feud style bot with team play, host controls, rendered game boards, question packs, custom server questions, leaderboards, Fast Money, lobbies, daily surveys, weekly challenges, rivalries, question-quality tools, presentation panels, and Discord-side question review/admin tools.
 
 ## Current Version
 
-`1.4.3`
+`1.4.4`
+
+## V1.4.4 Question Admin & Review UI
+
+V1.4.4 adds Discord-side tools for managing the large question pool without opening JSON files during a game night.
+
+Added:
+
+- `tools/apply_v1_4_4_question_admin.py`
+- `docs/V1.4.4_QUESTION_ADMIN.md`
+- `/feud_question_review`
+- `/feud_question_report`
+- `/feud_category_list`
+- `/feud_category_preview`
+- `/feud_disable_question`
+- `/feud_enable_question`
+- `/feud_alias_cleanup`
+
+Run this once after pulling V1.4.4:
+
+```powershell
+.\.venv\Scripts\python.exe tools\apply_v1_4_4_question_admin.py
+```
+
+Then run:
+
+```powershell
+.\.venv\Scripts\python.exe tools\healthcheck.py
+```
+
+Restart the bot and Discord should sync the new commands.
+
+### Question review
+
+`/feud_question_review` shows one board at a time with buttons:
+
+- Approve
+- Flag
+- Edit Needed
+- Skip
+- Disable Question
+- Previous
+- Next
+
+The review queue is sorted by question quality score so weaker boards appear first.
+
+### Question report
+
+`/feud_question_report` shows total questions, category count, average quality score, review counts, disabled count, low-quality count, alias-cleanup candidates, and most common categories.
+
+### Category tools
+
+Use:
+
+```text
+/feud_category_list
+/feud_category_preview category:wedding
+```
+
+### Disable / enable questions
+
+Use:
+
+```text
+/feud_disable_question search:<question or answer text>
+/feud_enable_question
+/feud_enable_question index:<number>
+```
+
+Disabled question IDs are stored in the bot's engagement state. The patcher also updates normal question selection so disabled questions are skipped.
+
+### Alias cleanup
+
+Use:
+
+```text
+/feud_alias_cleanup
+/feud_alias_cleanup apply:true
+```
+
+Dry-run mode reports duplicate aliases and aliases that exactly duplicate the answer text. Apply mode cleans runtime/custom-question aliases where possible. It does not rewrite bundled JSON files directly.
 
 ## V1.4.3 Discord Presentation Upgrade
 
@@ -16,39 +96,21 @@ Added:
 - `docs/V1.4.3_DISCORD_PRESENTATION.md`
 - `/feud_live` compact live-round panel
 - richer `/feud_board` layout
-- active round buttons:
-  - Show Board
-  - Join Red
-  - Join Blue
-  - Scores
-  - Host Controls
-- better correct-answer embeds
-- Top Answer callout when answer #1 is found
-- better wrong-answer embeds with strike pressure text
-- better steal incoming/result embeds
-- Board Clear wording when every answer is found
+- active round buttons: Show Board, Join Red, Join Blue, Scores, Host Controls
+- better correct/wrong answer embeds
+- Top Answer callout
+- Board Clear wording
+- cleaner steal incoming/result embeds
 
-Run this once after pulling V1.4.3:
+Run after pulling V1.4.3 or newer if not already applied:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\apply_v1_4_3_presentation_upgrade.py
 ```
 
-Then run:
-
-```powershell
-.\.venv\Scripts\python.exe tools\healthcheck.py
-```
-
-Restart the bot and Discord should sync:
-
-```text
-/feud_live
-```
-
 ## V1.4.2 Board UI Polish
 
-V1.4.2 moves the PNG board rendering into reusable modules and adds local preview tooling so visual issues can be checked without running Discord.
+V1.4.2 moves PNG board rendering into reusable modules and adds local preview tooling.
 
 Added:
 
@@ -59,25 +121,10 @@ Added:
 - `tools/render_board_preview.py`
 - `docs/V1.4.2_BOARD_UI_POLISH.md`
 
-Board improvements:
-
-- Strike Xs are drawn as centred diagonal geometry rather than font-rendered text.
-- Strike co-ordinates now live in `assets/board_layout.json`.
-- Revealed answers can show a subtle glow.
-- Long answers shrink more safely to fit the row.
-- Red and Blue score boxes have team-colour outlines.
-- The board now has a small round-type badge.
-- Preview images can be generated locally for 0/1/2/3 strikes, partial reveal, completed board, and mode badges.
-
-Run this once after pulling V1.4.2 or newer:
+Run after pulling V1.4.2 or newer if not already applied:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\apply_v1_4_2_board_ui_polish.py
-```
-
-Then generate local preview boards:
-
-```powershell
 .\.venv\Scripts\python.exe tools\render_board_preview.py
 ```
 
@@ -89,13 +136,11 @@ rendered_boards/previews/
 
 ## V1.4.1 Question Audit False-Positive Fix
 
-V1.4.1 tightens the question-audit logic so it no longer treats valid underscore categories such as `big_lebowski`, `social_media`, or `random_weird` as unknown categories, and no longer matches fact-check terms inside unrelated words such as `talking` or `checking`.
+V1.4.1 tightens the question-audit logic so valid underscore categories are no longer treated as unknown, and fact-check keywords no longer match inside unrelated words.
 
 ## V1.4 Board Polish & Question QA
 
-V1.4 added a practical board fix and a proper question-pack review workflow.
-
-Run this to scan the built-in question packs and optional custom question file:
+Run the local question audit:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\question_audit.py
@@ -107,48 +152,29 @@ It writes:
 - `reports/question_audit_findings.csv`
 - `reports/question_web_check_candidates.csv`
 
-The audit checks JSON structure, duplicate questions/answers, point ordering, suspicious/vague answers, category names, and fact/current-sensitive wording that needs manual or web checking.
-
-> Family Feud / Family Fortunes answers are survey-style answers, not normal quiz facts. The internet can help with factual/current prompts, but most boards should be judged for plausibility, fun, short answer wording, fair scoring, and play feedback.
+Family Feud / Family Fortunes answers are survey-style answers, not normal quiz facts. Most boards should be judged for plausibility, fun, short answer wording, fair scoring, and play feedback.
 
 ## V1.3 Modularisation & Health Command
 
-V1.3 started the modularisation path by adding a `feudbot/` package:
+V1.3 added the `feudbot/` package and `/feud_health`.
 
-- `feudbot/version.py` keeps version metadata out of the main bot file.
-- `feudbot/diagnostics.py` contains reusable health and diagnostics helpers.
-- `feudbot/health_command.py` contains the Discord `/feud_health` command registration.
-- `tools/apply_v1_3_modularisation.py` safely patches the large existing `main.py` to wire in the new command.
-
-Run this once after pulling V1.3 or newer if your local `main.py` has not been patched yet:
+Run if your local `main.py` has not been patched yet:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\apply_v1_3_modularisation.py
 ```
 
-After restarting the bot, Discord will sync:
-
-```text
-/feud_health
-```
-
 ## V1.2 Diagnostics & Operator Tools
 
-V1.2 added a local healthcheck for checking setup before starting the bot:
+Run before starting the bot:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\healthcheck.py
 ```
 
-It checks required files, `.env`, `main.py` syntax, question JSON structure, runtime JSON, SQLite readability, board template presence, and detected slash commands.
-
 ## V1.1 Stability & Repo Hygiene
 
-V1.1 cleaned up the repo and added safer defaults:
-
-- `.gitignore` for secrets, virtual environments, caches, runtime state, SQLite files, generated boards, and logs.
-- `.env.example` for safer setup.
-- Runtime files removed from the public source repo.
+V1.1 added `.gitignore`, `.env.example`, and removed runtime files from the public source repo.
 
 ## Features
 
@@ -157,10 +183,11 @@ V1.1 cleaned up the repo and added safer defaults:
 - Multiple game modes including Classic, Fast Money, Sudden Death, Teams Only, and Chaos.
 - Question packs, categories, difficulty filtering, and autocomplete.
 - Custom server questions and moderator-managed suggestions.
+- Discord-side question review, reports, category previews, disabling/enabling, and alias cleanup.
 - Player profiles, achievements, daily/weekly/lifetime leaderboards, and rivalry stats.
 - Daily survey prompts, weekly challenges, mini polls, and between-round callouts.
 - Question analytics, bad-answer tracking, board ratings, and alias suggestions.
-- Optional rendered PNG board using `assets/game_board_template.png`.
+- Rendered PNG board using `assets/game_board_template.png`.
 - Improved Discord presentation with `/feud_live` and active round buttons.
 
 The bundled question pool contains 2,000 questions across 60 categories:
@@ -197,6 +224,7 @@ The bundled question pool contains 2,000 questions across 60 categories:
    .\.venv\Scripts\python.exe tools\apply_v1_3_modularisation.py
    .\.venv\Scripts\python.exe tools\apply_v1_4_2_board_ui_polish.py
    .\.venv\Scripts\python.exe tools\apply_v1_4_3_presentation_upgrade.py
+   .\.venv\Scripts\python.exe tools\apply_v1_4_4_question_admin.py
    .\.venv\Scripts\python.exe tools\render_board_preview.py
    .\.venv\Scripts\python.exe tools\healthcheck.py
    .\.venv\Scripts\python.exe tools\question_audit.py
@@ -210,7 +238,7 @@ The bundled question pool contains 2,000 questions across 60 categories:
 
 ## Runtime Files
 
-These files are created or updated while the bot runs and should stay local to the machine/server hosting the bot:
+These files are created or updated while the bot runs and should stay local to the hosting machine/server:
 
 - `active_games.json`
 - `engagement_state.json`
@@ -232,19 +260,21 @@ These files are created or updated while the bot runs and should stay local to t
 - `/feud_board` shows the current board with the presentation panel.
 - `/feud_admin` opens host controls.
 - `/feud_admin_menu` opens the compact host/admin control menu.
+- `/feud_question_review` reviews questions one at a time.
+- `/feud_question_report` shows question quality/review summary.
+- `/feud_category_list` lists question categories and counts.
+- `/feud_category_preview` previews questions from a category.
+- `/feud_disable_question` disables a board from normal selection.
+- `/feud_enable_question` lists or re-enables disabled boards.
+- `/feud_alias_cleanup` reports or cleans duplicate/self-duplicating aliases.
 - `/feud_fast_money` starts a solo 5-question Fast Money challenge.
 - `/feud_add_question` adds custom questions for the current server.
 - `/feud_custom_questions`, `/feud_edit_custom`, and `/feud_delete_custom` manage server questions.
 - `/feud_settings` adjusts cooldowns, strikes, timers, steal mode, and more.
-- `/feud_blacklist_word`, `/feud_unblacklist_word`, and `/feud_pause` provide moderation controls.
 - `/feud_leaderboard` supports lifetime, weekly, and daily boards.
 - `/feud_profile` shows a player's stat profile.
 - `/feud_validate_questions` checks question data quality inside Discord.
 - `/feud_question_analytics` shows freshness and performance stats.
-- `/feud_daily_survey` posts the daily casual survey prompt.
-- `/feud_mini_poll` posts a quick between-round poll.
-- `/feud_challenge` shows this week's challenge.
-- `/feud_rivalry` shows Red vs Blue or player-vs-player rivalry stats.
 - `/feud_suggest` lets players suggest future questions.
 - `/feud_approve_suggestion` turns a suggestion into a server custom question.
 
@@ -260,10 +290,10 @@ Then open `http://127.0.0.1:8765`.
 
 ## Recommended Next Steps
 
-Suggested follow-up upgrades after V1.4.3:
+Suggested follow-up upgrades after V1.4.4:
 
-1. Test `/feud_live`, `/feud_board`, correct/wrong answer posts, and steal phase in Discord.
-2. Add real Double Points and Triple Points scoring modes so the board badge has full gameplay support.
-3. Add a Discord `/feud_question_report` command using the question-audit logic.
+1. Test `/feud_question_review`, disable a weak board, and confirm normal games skip it.
+2. Use `/feud_question_report` to find weak categories and alias cleanup candidates.
+3. Add real Double Points and Triple Points scoring modes.
 4. Build a guided Game Night mode with lobby, category vote, normal rounds, double/triple points, Fast Money, and a winner ceremony.
 5. Add board/themes such as classic, neon arcade, pub quiz, mafia noir, Dude bowling, and Christmas.
