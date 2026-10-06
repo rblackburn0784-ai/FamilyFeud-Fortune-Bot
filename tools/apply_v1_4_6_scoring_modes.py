@@ -209,7 +209,12 @@ def main() -> None:
     text = text.replace('GAME_MODES = ["classic", "fast_money", "sudden_death", "teams_only", "chaos"]',
                         'GAME_MODES = ["classic", "fast_money", "sudden_death", "teams_only", "double_points", "triple_points", "chaos"]')
 
-    text = insert_after(text, "def game_guess_cooldown(game: ChannelGame) -> int:\n", PATCH, "after game_guess_cooldown")
+    text = insert_after(
+        text,
+        '    return get_server_settings(game.guild_id)["guess_cooldown_seconds"]\n',
+        PATCH,
+        "after game_guess_cooldown body",
+    )
 
     text = text.replace(
         '        awarded_points = answer.points\n\n        if game.mode == "chaos":\n            awarded_points += random.choice([0, 5, 10, 15])',
