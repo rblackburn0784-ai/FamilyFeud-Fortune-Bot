@@ -12,9 +12,40 @@ Run this before starting the bot, after pulling updates, or before a Discord gam
 
 The healthcheck does **not** connect to Discord. It checks required files, `.env`, Python compilation, question JSON quality, runtime JSON, SQLite readability, board template availability, and detected slash commands.
 
+## V1.4.6 Scoring Modes Patcher
+
+Run this once after pulling V1.4.6:
+
+```powershell
+.\.venv\Scripts\python.exe tools\apply_v1_4_6_scoring_modes.py
+```
+
+This adds real gameplay support for:
+
+- Classic
+- Fast Money
+- Sudden Death
+- Double Points
+- Triple Points
+- Chaos
+
+It also updates Game Night's default structure to:
+
+```json
+{
+  "rounds": ["classic", "classic", "double_points", "triple_points", "fast_money"]
+}
+```
+
+The patcher writes a local backup named:
+
+```text
+main.py.v1_4_6_scoring_modes_backup
+```
+
 ## V1.4.5 Game Night Patcher
 
-Run this once after pulling V1.4.5:
+Run this once after pulling V1.4.5 or newer if not already applied:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\apply_v1_4_5_game_night.py
@@ -32,12 +63,6 @@ This adds a guided Game Night session layer:
 - locked teams
 - session scoreboard
 - winner ceremony and awards
-
-The patcher writes a local backup named:
-
-```text
-main.py.v1_4_5_game_night_backup
-```
 
 ## V1.4.4 Question Admin Patcher
 
