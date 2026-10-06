@@ -16,20 +16,37 @@ Or on macOS/Linux:
 python tools/healthcheck.py
 ```
 
-The healthcheck does **not** connect to Discord. It checks:
+The healthcheck does **not** connect to Discord. It checks required source files, `.env`, Python compilation, question JSON quality, runtime JSON, SQLite readability, board template availability, and detected slash commands.
 
-- required source files
-- `.env` / `.env.example` setup
-- Python compilation of `main.py`
-- built-in question JSON quality
-- optional runtime JSON validity
-- SQLite database readability
-- board template availability
-- slash-command surface detected in `main.py`
+## V1.4.4 Question Admin Patcher
+
+Run this once after pulling V1.4.4:
+
+```powershell
+.\.venv\Scripts\python.exe tools\apply_v1_4_4_question_admin.py
+```
+
+This adds Discord-side question management:
+
+- `/feud_question_review`
+- `/feud_question_report`
+- `/feud_category_list`
+- `/feud_category_preview`
+- `/feud_disable_question`
+- `/feud_enable_question`
+- `/feud_alias_cleanup`
+
+It also patches the normal question picker so disabled questions are skipped during regular gameplay.
+
+The patcher writes a local backup named:
+
+```text
+main.py.v1_4_4_question_admin_backup
+```
 
 ## V1.4.3 Discord Presentation Patcher
 
-Run this once after pulling V1.4.3:
+Run this once after pulling V1.4.3 or newer if not already applied:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\apply_v1_4_3_presentation_upgrade.py
@@ -45,7 +62,7 @@ main.py.v1_4_3_presentation_backup
 
 ## V1.4.2 Board UI Polish Patcher
 
-Run this once after pulling V1.4.2:
+Run this once after pulling V1.4.2 or newer if not already applied:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\apply_v1_4_2_board_ui_polish.py
@@ -53,14 +70,7 @@ Run this once after pulling V1.4.2:
 
 This replaces the old hard-coded `render_board_image` body in `main.py` with a small wrapper around `feudbot.board_renderer.render_game_board`.
 
-The reusable renderer adds:
-
-- centred diagonal strike X geometry
-- strike and badge co-ordinates in `assets/board_layout.json`
-- safer long-answer fitting
-- optional revealed-answer glow
-- Red/Blue score outlines
-- a small round-type badge
+The reusable renderer adds centred diagonal strike X geometry, co-ordinates in `assets/board_layout.json`, safer long-answer fitting, optional revealed-answer glow, team score outlines, and a round-type badge.
 
 The patcher writes a local backup named `main.py.v142.bak` the first time it edits the file.
 
@@ -78,10 +88,6 @@ It writes preview boards to:
 rendered_boards/previews/
 ```
 
-The preview set includes 0/1/2/3 strikes, partial reveal, completed board, Sudden Death badge, Double Points badge, and Triple Points badge.
-
-Use `assets/board_layout.json` to nudge strike boxes, answer text offsets, score outlines, glow, and badge placement.
-
 ## V1.4 Board Polish Patcher
 
 The original V1.4 patcher is kept for history:
@@ -90,7 +96,7 @@ The original V1.4 patcher is kept for history:
 .\.venv\Scripts\python.exe tools\apply_v1_4_board_polish.py
 ```
 
-For new installs, prefer the V1.4.2 patcher above because it moves rendering into reusable modules instead of only patching the strike drawing block.
+For new installs, prefer the V1.4.2 patcher because it moves rendering into reusable modules instead of only patching the strike drawing block.
 
 ## Question Audit
 
