@@ -2,6 +2,39 @@
 
 Local operator tools for Family Feud Fortune Bot.
 
+## V1.5 Question Pack Builder
+
+Run this to generate the checked V1.5 expansion pack:
+
+```powershell
+.\.venv\Scripts\python.exe tools\build_v1_5_question_pack.py
+```
+
+Creates:
+
+```text
+v1_5_questions.json
+reports/v1_5_question_pack_report.md
+```
+
+The builder generates roughly 3,000 additional survey-style boards and validates survey phrasing, categories, answer count, descending points, duplicates, and aliases.
+
+## V1.5 Question Index Patcher
+
+After building the pack, run:
+
+```powershell
+.\.venv\Scripts\python.exe tools\apply_v1_5_question_index.py
+```
+
+This patches `main.py` to load `v1_5_questions.json` and use `feudbot.question_index.QuestionIndex` for faster category/pack lookup.
+
+Backup:
+
+```text
+main.py.v1_5_question_index_backup
+```
+
 ## Healthcheck
 
 Run this before starting the bot, after pulling updates, or before a Discord game night:
@@ -14,59 +47,21 @@ The healthcheck does **not** connect to Discord. It checks required files, `.env
 
 ## V1.4.6 Scoring Modes Patcher
 
-Run this once after pulling V1.4.6:
-
 ```powershell
 .\.venv\Scripts\python.exe tools\apply_v1_4_6_scoring_modes.py
 ```
 
-This adds real gameplay support for:
-
-- Classic
-- Fast Money
-- Sudden Death
-- Double Points
-- Triple Points
-- Chaos
-
-It also updates Game Night's default structure to:
-
-```json
-{
-  "rounds": ["classic", "classic", "double_points", "triple_points", "fast_money"]
-}
-```
-
-The patcher writes a local backup named:
-
-```text
-main.py.v1_4_6_scoring_modes_backup
-```
+Adds real support for Classic, Fast Money, Sudden Death, Double Points, Triple Points, and Chaos.
 
 ## V1.4.5 Game Night Patcher
-
-Run this once after pulling V1.4.5 or newer if not already applied:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\apply_v1_4_5_game_night.py
 ```
 
-This adds a guided Game Night session layer:
-
-- `/feud_game_night`
-- `/feud_game_night_score`
-- `/feud_game_night_next`
-- `/feud_game_night_finish`
-- Red/Blue lobby buttons
-- Auto-balance
-- Category voting
-- locked teams
-- session scoreboard
-- winner ceremony and awards
+Adds `/feud_game_night`, session teams, category voting, scoreboards, and winner ceremony.
 
 ## V1.4.4 Question Admin Patcher
-
-Run this once after pulling V1.4.4 or newer if not already applied:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\apply_v1_4_4_question_admin.py
