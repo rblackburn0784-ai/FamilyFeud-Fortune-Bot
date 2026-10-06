@@ -26,12 +26,19 @@ fortune_bot.sqlite3
 *.db-wal
 *.db-shm
 
+# Generated question packs / reports
+v1_5_questions.json
+
 # Generated images / temporary output
 rendered_boards/
 reports/
 *.tmp
 *.bak
 main.py.v1_4_3_presentation_backup
+main.py.v1_4_4_question_admin_backup
+main.py.v1_4_5_game_night_backup
+main.py.v1_4_6_scoring_modes_backup
+main.py.v1_5_question_index_backup
 
 # Logs
 logs/
