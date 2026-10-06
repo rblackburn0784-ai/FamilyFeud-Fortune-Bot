@@ -27,6 +27,22 @@ The healthcheck does **not** connect to Discord. It checks:
 - board template availability
 - slash-command surface detected in `main.py`
 
+## V1.4.3 Discord Presentation Patcher
+
+Run this once after pulling V1.4.3:
+
+```powershell
+.\.venv\Scripts\python.exe tools\apply_v1_4_3_presentation_upgrade.py
+```
+
+This improves the Discord chat presentation by adding richer live-round embeds, `/feud_live`, active round buttons, improved `/feud_board`, better correct/wrong answer embeds, Top Answer callouts, Board Clear wording, and cleaner steal phase/result embeds.
+
+The patcher writes a local backup named:
+
+```text
+main.py.v1_4_3_presentation_backup
+```
+
 ## V1.4.2 Board UI Polish Patcher
 
 Run this once after pulling V1.4.2:
