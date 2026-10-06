@@ -4,7 +4,47 @@ A Discord Family Fortunes / Family Feud style bot with team play, host controls,
 
 ## Current Version
 
-`1.4.2`
+`1.4.3`
+
+## V1.4.3 Discord Presentation Upgrade
+
+V1.4.3 improves the in-Discord game presentation without changing the core scoring rules.
+
+Added:
+
+- `tools/apply_v1_4_3_presentation_upgrade.py`
+- `docs/V1.4.3_DISCORD_PRESENTATION.md`
+- `/feud_live` compact live-round panel
+- richer `/feud_board` layout
+- active round buttons:
+  - Show Board
+  - Join Red
+  - Join Blue
+  - Scores
+  - Host Controls
+- better correct-answer embeds
+- Top Answer callout when answer #1 is found
+- better wrong-answer embeds with strike pressure text
+- better steal incoming/result embeds
+- Board Clear wording when every answer is found
+
+Run this once after pulling V1.4.3:
+
+```powershell
+.\.venv\Scripts\python.exe tools\apply_v1_4_3_presentation_upgrade.py
+```
+
+Then run:
+
+```powershell
+.\.venv\Scripts\python.exe tools\healthcheck.py
+```
+
+Restart the bot and Discord should sync:
+
+```text
+/feud_live
+```
 
 ## V1.4.2 Board UI Polish
 
@@ -29,7 +69,7 @@ Board improvements:
 - The board now has a small round-type badge.
 - Preview images can be generated locally for 0/1/2/3 strikes, partial reveal, completed board, and mode badges.
 
-Run this once after pulling V1.4.2:
+Run this once after pulling V1.4.2 or newer:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\apply_v1_4_2_board_ui_polish.py
@@ -47,8 +87,6 @@ Preview images are written to:
 rendered_boards/previews/
 ```
 
-> The board badge can display labels such as Classic, Fast Money, Sudden Death, Double Points, Triple Points, and Chaos. Double/triple-points gameplay still needs a future gameplay-mode patch before those become live scoring modes.
-
 ## V1.4.1 Question Audit False-Positive Fix
 
 V1.4.1 tightens the question-audit logic so it no longer treats valid underscore categories such as `big_lebowski`, `social_media`, or `random_weird` as unknown categories, and no longer matches fact-check terms inside unrelated words such as `talking` or `checking`.
@@ -56,14 +94,6 @@ V1.4.1 tightens the question-audit logic so it no longer treats valid underscore
 ## V1.4 Board Polish & Question QA
 
 V1.4 added a practical board fix and a proper question-pack review workflow.
-
-### Board strike alignment
-
-The rendered board previously drew strike crosses using a font-rendered `X`. Font metrics can shift between machines, which is why the crosses could drift inside the strike boxes.
-
-V1.4.2 supersedes the original V1.4 board patcher with the reusable renderer and layout file above.
-
-### Question audit
 
 Run this to scan the built-in question packs and optional custom question file:
 
@@ -102,8 +132,6 @@ After restarting the bot, Discord will sync:
 /feud_health
 ```
 
-It reports version, uptime, Discord latency, server count, active rounds, question pool size, custom questions, SQLite status, and board-template status.
-
 ## V1.2 Diagnostics & Operator Tools
 
 V1.2 added a local healthcheck for checking setup before starting the bot:
@@ -133,6 +161,7 @@ V1.1 cleaned up the repo and added safer defaults:
 - Daily survey prompts, weekly challenges, mini polls, and between-round callouts.
 - Question analytics, bad-answer tracking, board ratings, and alias suggestions.
 - Optional rendered PNG board using `assets/game_board_template.png`.
+- Improved Discord presentation with `/feud_live` and active round buttons.
 
 The bundled question pool contains 2,000 questions across 60 categories:
 
@@ -167,6 +196,7 @@ The bundled question pool contains 2,000 questions across 60 categories:
    ```powershell
    .\.venv\Scripts\python.exe tools\apply_v1_3_modularisation.py
    .\.venv\Scripts\python.exe tools\apply_v1_4_2_board_ui_polish.py
+   .\.venv\Scripts\python.exe tools\apply_v1_4_3_presentation_upgrade.py
    .\.venv\Scripts\python.exe tools\render_board_preview.py
    .\.venv\Scripts\python.exe tools\healthcheck.py
    .\.venv\Scripts\python.exe tools\question_audit.py
@@ -195,10 +225,11 @@ These files are created or updated while the bot runs and should stay local to t
 
 - `/feud_health` shows bot version, uptime, latency, content counts, active rounds, SQLite status, and board asset status.
 - `/feud_menu` opens the main button menu.
+- `/feud_live` shows the compact live round panel with action buttons.
 - `/feud_start` starts a round with category packs and game modes.
 - `/feud_lobby` opens a pre-game lobby with team joins and category voting.
 - `/feud_join` joins the current round on Red or Blue team.
-- `/feud_board` shows the current board.
+- `/feud_board` shows the current board with the presentation panel.
 - `/feud_admin` opens host controls.
 - `/feud_admin_menu` opens the compact host/admin control menu.
 - `/feud_fast_money` starts a solo 5-question Fast Money challenge.
@@ -229,10 +260,10 @@ Then open `http://127.0.0.1:8765`.
 
 ## Recommended Next Steps
 
-Suggested follow-up upgrades after V1.4.2:
+Suggested follow-up upgrades after V1.4.3:
 
-1. Use `rendered_boards/previews/` to tune `assets/board_layout.json` against your actual template.
-2. Add board themes such as classic, neon arcade, pub quiz, mafia noir, Dude bowling, and Christmas.
-3. Add a Discord presentation upgrade with richer embeds, clearer steal-phase UI, and stronger top-answer/wrong-answer moments.
-4. Add a Discord `/feud_question_report` command using the same audit logic.
-5. Build a guided Game Night mode with lobby, category vote, normal rounds, double/triple points, Fast Money, and a winner ceremony.
+1. Test `/feud_live`, `/feud_board`, correct/wrong answer posts, and steal phase in Discord.
+2. Add real Double Points and Triple Points scoring modes so the board badge has full gameplay support.
+3. Add a Discord `/feud_question_report` command using the question-audit logic.
+4. Build a guided Game Night mode with lobby, category vote, normal rounds, double/triple points, Fast Money, and a winner ceremony.
+5. Add board/themes such as classic, neon arcade, pub quiz, mafia noir, Dude bowling, and Christmas.
