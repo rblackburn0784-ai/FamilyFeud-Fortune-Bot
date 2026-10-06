@@ -3,6 +3,10 @@
 This patch intentionally edits the existing single-file bot with narrow string replacements.
 It adds real scoring multipliers, safer sudden-death handling, balanced chaos modifiers,
 Game Night round schedule configuration, and clearer score breakdown helpers.
+
+It is designed to work whether V1.4.5 Game Night was patched before or after this file
+was pulled, so it handles both the original scoring snippets and the V1.4.5
+multiplier-adjusted snippets.
 """
 from __future__ import annotations
 
@@ -180,11 +184,18 @@ def v146_score_breakdown_text(game: ChannelGame) -> str:
 # --- V1.4.6 SCORING MODES END ---
 '''
 
+V145_GAME_NIGHT_ROUNDS = '''GAME_NIGHT_ROUNDS = [
+    {"label": "Round 1", "mode": "classic", "multiplier": 1},
+    {"label": "Round 2", "mode": "classic", "multiplier": 2, "display_mode": "double_points"},
+    {"label": "Round 3", "mode": "classic", "multiplier": 3, "display_mode": "triple_points"},
+]'''
 
-def replace_once(text: str, old: str, new: str, label: str) -> str:
-    if old not in text:
-        raise RuntimeError(f"Could not find patch target: {label}")
-    return text.replace(old, new, 1)
+V146_GAME_NIGHT_ROUNDS = '''GAME_NIGHT_ROUNDS = [
+    {"label": "Round 1", "mode": "classic", "multiplier": 1},
+    {"label": "Round 2", "mode": "classic", "multiplier": 1},
+    {"label": "Round 3", "mode": "double_points", "multiplier": 1},
+    {"label": "Round 4", "mode": "triple_points", "multiplier": 1},
+]'''
 
 
 def insert_after(text: str, marker: str, block: str, label: str) -> str:
@@ -193,6 +204,24 @@ def insert_after(text: str, marker: str, block: str, label: str) -> str:
     if marker not in text:
         raise RuntimeError(f"Could not find insertion marker: {label}")
     return text.replace(marker, marker + "\n" + block, 1)
+
+
+def replace_any_awarded_points_snippet(text: str) -> str:
+    original = (
+        '        awarded_points = answer.points\n\n'
+        '        if game.mode == "chaos":\n'
+        '            awarded_points += random.choice([0, 5, 10, 15])'
+    )
+    v145 = (
+        '        awarded_points = answer.points * int(getattr(game, \'game_night_multiplier\', 1))\n\n'
+        '        if game.mode == "chaos":\n'
+        '            awarded_points += random.choice([0, 5, 10, 15])'
+    )
+    replacement = '        awarded_points = v146_awarded_points(game, answer)'
+
+    text = text.replace(original, replacement)
+    text = text.replace(v145, replacement)
+    return text
 
 
 def main() -> None:
@@ -206,8 +235,10 @@ def main() -> None:
         BACKUP.write_text(text, encoding="utf-8")
         print(f"Backup written to {BACKUP.name}")
 
-    text = text.replace('GAME_MODES = ["classic", "fast_money", "sudden_death", "teams_only", "chaos"]',
-                        'GAME_MODES = ["classic", "fast_money", "sudden_death", "teams_only", "double_points", "triple_points", "chaos"]')
+    text = text.replace(
+        'GAME_MODES = ["classic", "fast_money", "sudden_death", "teams_only", "chaos"]',
+        'GAME_MODES = ["classic", "fast_money", "sudden_death", "teams_only", "double_points", "triple_points", "chaos"]'
+    )
 
     text = insert_after(
         text,
@@ -216,19 +247,15 @@ def main() -> None:
         "after game_guess_cooldown body",
     )
 
-    text = text.replace(
-        '        awarded_points = answer.points\n\n        if game.mode == "chaos":\n            awarded_points += random.choice([0, 5, 10, 15])',
-        '        awarded_points = v146_awarded_points(game, answer)'
-    )
+    text = replace_any_awarded_points_snippet(text)
+
     text = text.replace(
         '        if team in game.team_scores:\n            game.team_scores[team] += awarded_points',
         '        if team in game.team_scores:\n            game.team_scores[team] += awarded_points\n            v146_record_round_points(game, team, awarded_points, answer)'
     )
 
-    text = text.replace(
-        '        awarded_points = answer.points\n\n        if game.mode == "chaos":\n            awarded_points += random.choice([0, 5, 10, 15])',
-        '        awarded_points = v146_awarded_points(game, answer)'
-    )
+    text = replace_any_awarded_points_snippet(text)
+
     text = text.replace(
         '        board_points = get_revealed_board_points(game)\n\n        # The steal team takes the revealed board pot.\n        game.team_scores[stealing_team] = board_points',
         '        board_points = get_revealed_board_points(game)\n        steal_multiplier = v146_steal_multiplier(game)\n        steal_award = board_points * steal_multiplier\n        v146_ensure_scoring_state(game)["steal_bonus_awarded"] += max(0, steal_award - board_points)\n\n        # The steal team takes the revealed board pot.\n        game.team_scores[stealing_team] = steal_award'
@@ -236,11 +263,6 @@ def main() -> None:
     text = text.replace(
         '            f"💰 `{board_points}` revealed board points go to their team."',
         '            f"💰 `{steal_award}` board points go to their team."'
-    )
-
-    text = text.replace(
-        '        if game.mode == "sudden_death" or all_answers_revealed(game):',
-        '        if game.mode == "sudden_death" or all_answers_revealed(game):'
     )
 
     text = text.replace(
@@ -254,6 +276,11 @@ def main() -> None:
     )
 
     # Game Night helper integration if V1.4.5 patch is present.
+    text = text.replace(V145_GAME_NIGHT_ROUNDS, V146_GAME_NIGHT_ROUNDS)
+    text = text.replace(
+        'f"`{state.get(\'round_index\', 0)}/3` before Fast Money"',
+        'f"`{state.get(\'round_index\', 0)}/{len(GAME_NIGHT_ROUNDS)}` before Fast Money"'
+    )
     text = text.replace(
         'GAME_NIGHT_DEFAULT_ROUNDS = ["classic", "classic", "classic", "fast_money"]',
         'GAME_NIGHT_DEFAULT_ROUNDS = ["classic", "classic", "double_points", "triple_points", "fast_money"]'
