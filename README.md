@@ -1,10 +1,64 @@
 # Family Feud Fortune Bot
 
-A Discord Family Fortunes / Family Feud style bot with team play, host controls, rendered game boards, question packs, custom server questions, leaderboards, Fast Money, lobbies, daily surveys, weekly challenges, rivalries, question-quality tools, presentation panels, Discord-side question review/admin tools, and guided Game Night flow.
+A Discord Family Fortunes / Family Feud style bot with team play, host controls, rendered game boards, question packs, custom server questions, leaderboards, Fast Money, lobbies, daily surveys, weekly challenges, rivalries, question-quality tools, presentation panels, Discord-side question review/admin tools, guided Game Night flow, and real scoring modes.
 
 ## Current Version
 
-`1.4.5`
+`1.4.6`
+
+## V1.4.6 Scoring Modes & Balance
+
+V1.4.6 makes the round-type badge matter mechanically.
+
+Added:
+
+- `tools/apply_v1_4_6_scoring_modes.py`
+- `docs/V1.4.6_SCORING_MODES.md`
+- real `double_points` scoring
+- real `triple_points` scoring
+- cleaner Sudden Death scoring labels
+- weighted/balanced Chaos modifiers
+- steal bonus support
+- round score breakdown helper text
+- Game Night default schedule update
+
+Run this once after pulling V1.4.6:
+
+```powershell
+.\.venv\Scripts\python.exe tools\apply_v1_4_6_scoring_modes.py
+```
+
+Then run:
+
+```powershell
+.\.venv\Scripts\python.exe tools\healthcheck.py
+```
+
+Restart the bot and test:
+
+```text
+/feud_start mode:double_points
+/feud_start mode:triple_points
+/feud_start mode:sudden_death
+/feud_start mode:chaos
+/feud_game_night
+```
+
+### Game Night schedule
+
+The default Game Night structure is now:
+
+```json
+{
+  "rounds": [
+    "classic",
+    "classic",
+    "double_points",
+    "triple_points",
+    "fast_money"
+  ]
+}
+```
 
 ## V1.4.5 Game Night Flow
 
@@ -28,51 +82,17 @@ Added:
 - Fast Money finale prompt
 - Winner ceremony and awards
 
-Run this once after pulling V1.4.5:
+Run if not already applied:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\apply_v1_4_5_game_night.py
 ```
-
-Then run:
-
-```powershell
-.\.venv\Scripts\python.exe tools\healthcheck.py
-```
-
-Restart the bot and Discord should sync the new commands.
-
-### Game Night flow
-
-```text
-Lobby opens
-Players join Red/Blue
-Category vote
-Round 1 — Classic
-Round 2 — Double Points style round
-Round 3 — Triple Points style round
-Fast Money Finale prompt
-Winner Ceremony
-Next Game Night prompt
-```
-
-### Awards
-
-The ceremony includes:
-
-- Top Answer Magnet
-- Best Steal
-- Worst Guess
-- Fastest Finger
-- The Dude Abides
 
 ## Recent patches
 
 ### V1.4.4 Question Admin & Review UI
 
 Adds `/feud_question_review`, `/feud_question_report`, `/feud_category_list`, `/feud_category_preview`, `/feud_disable_question`, `/feud_enable_question`, and `/feud_alias_cleanup`.
-
-Run if not already applied:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\apply_v1_4_4_question_admin.py
@@ -133,6 +153,7 @@ Run the local question audit:
    .\.venv\Scripts\python.exe tools\apply_v1_4_3_presentation_upgrade.py
    .\.venv\Scripts\python.exe tools\apply_v1_4_4_question_admin.py
    .\.venv\Scripts\python.exe tools\apply_v1_4_5_game_night.py
+   .\.venv\Scripts\python.exe tools\apply_v1_4_6_scoring_modes.py
    .\.venv\Scripts\python.exe tools\healthcheck.py
    ```
 
@@ -192,10 +213,10 @@ Then open `http://127.0.0.1:8765`.
 
 ## Recommended next steps
 
-Suggested follow-up upgrades after V1.4.5:
+Suggested follow-up upgrades after V1.4.6:
 
-1. Test a full Game Night flow in Discord with 2–4 players.
-2. Add deeper real Double Points and Triple Points support for normal `/feud_start` modes.
+1. Test double/triple/chaos scoring in live Discord rounds.
+2. Run a full Game Night with the new Classic → Classic → Double → Triple → Fast Money structure.
 3. Add richer tracking for Game Night awards such as Best Steal and Fastest Finger.
 4. Add themes such as Classic, Dude Bowling, Pub Quiz, Mafia Noir, Neon Arcade, and Christmas.
 5. Move Game Night state into persistent JSON/SQLite so sessions survive restarts.
